@@ -9,7 +9,7 @@
     body {
       background: #020617;
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
       touch-action: none;
       width: 100vw;
@@ -23,31 +23,43 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: #090d16;
+      background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
       z-index: 100;
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      padding: 16px 24px;
-      gap: 30px;
+      padding: 16px 28px;
+      gap: 32px;
     }
     .setup-left {
       display: flex;
       flex-direction: column;
       justify-content: center;
       gap: 12px;
-      max-width: 320px;
+      max-width: 330px;
+    }
+    .brand-badge {
+      display: inline-block;
+      align-self: flex-start;
+      background: #facc15;
+      color: #0f172a;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 12px;
+      letter-spacing: 1px;
     }
     .setup-title {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 900;
       color: #38bdf8;
-      letter-spacing: 1px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 10px rgba(56,189,248,0.3);
     }
     .setup-sub {
       font-size: 13px;
-      color: #94a3b8;
+      color: #cbd5e1;
       line-height: 1.5;
     }
     .cam-box-wrap {
@@ -55,11 +67,11 @@
       width: 52vw;
       height: 82vh;
       max-width: 480px;
-      border-radius: 20px;
+      border-radius: 22px;
       overflow: hidden;
-      border: 3px solid #334155;
+      border: 3.5px solid #38bdf8;
       background: #000;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.8);
     }
     #setup-video {
       width: 100%;
@@ -81,14 +93,14 @@
       left: 18%;
       width: 64%;
       height: 88%;
-      border: 2.5px dashed rgba(56, 189, 248, 0.4);
-      border-radius: 18px;
+      border: 3px dashed rgba(250, 204, 21, 0.5);
+      border-radius: 20px;
       pointer-events: none;
       transition: all 0.3s;
     }
     .guide-box.ready {
       border-color: #4ade80;
-      box-shadow: 0 0 25px rgba(74, 222, 128, 0.5);
+      box-shadow: 0 0 30px rgba(74, 222, 128, 0.6);
     }
     #countdown-overlay {
       position: absolute;
@@ -99,10 +111,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 90px;
+      font-size: 96px;
       font-weight: 900;
       color: #facc15;
-      text-shadow: 0 0 25px rgba(250, 204, 21, 0.8);
+      text-shadow: 0 0 30px rgba(250, 204, 21, 0.9);
       pointer-events: none;
       z-index: 10;
     }
@@ -115,23 +127,24 @@
     .progress-bar-wrap {
       width: 100%;
       height: 14px;
-      background: #1e293b;
+      background: #0f172a;
       border-radius: 8px;
       overflow: hidden;
+      border: 1px solid #334155;
     }
     #pose-progress {
       width: 0%;
       height: 100%;
-      background: #4ade80;
+      background: linear-gradient(90deg, #38bdf8, #4ade80);
       transition: width 0.1s linear;
     }
     .auto-notice {
       font-size: 12px;
-      color: #64748b;
+      color: #94a3b8;
       font-weight: 600;
     }
 
-    /* 2. 3D 게임 화면 및 깔끔해진 좌측 대시보드 (중앙 시야 완전 개방) */
+    /* 2. 3D 게임 화면 및 자파리 대시보드 */
     #game-canvas {
       position: absolute;
       top: 0;
@@ -146,10 +159,10 @@
       right: 16px;
       width: 130px;
       height: 98px;
-      border-radius: 12px;
+      border-radius: 14px;
       overflow: hidden;
-      border: 2px solid rgba(56, 189, 248, 0.6);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      border: 2px solid rgba(56, 189, 248, 0.8);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
       z-index: 10;
       background: #000;
     }
@@ -160,40 +173,60 @@
       transform: scaleX(-1);
     }
 
-    /* 텍스트가 화면 중앙을 가리지 않도록 좌측 상단으로 모두 통합 */
+    /* 자파리 전용 아케이드 대시보드 (시야 완전 개방) */
     .dashboard-panel {
       position: absolute;
       top: 16px;
       left: 16px;
       z-index: 10;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 10px 16px;
-      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px solid #38bdf8;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      padding: 12px 18px;
+      border-radius: 18px;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
+    }
+    .hud-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .hud-title-tag {
+      font-size: 11px;
+      background: #0284c7;
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+    .score-val {
+      color: #facc15;
+      font-size: 20px;
+      font-weight: 900;
     }
     .hud-action-tag {
       font-size: 16px;
       font-weight: 900;
-      color: #facc15;
+      color: #38bdf8;
     }
     .speed-gauge-wrap {
-      width: 110px;
-      height: 8px;
+      width: 120px;
+      height: 9px;
       background: #1e293b;
-      border-radius: 4px;
+      border-radius: 5px;
       overflow: hidden;
-      margin-top: 2px;
+      margin-top: 3px;
     }
     #speed-gauge {
       width: 20%;
       height: 100%;
-      background: #38bdf8;
+      background: linear-gradient(90deg, #38bdf8, #ef4444);
       transition: width 0.15s ease-out;
     }
   </style>
@@ -207,13 +240,14 @@
   <!-- 1. 시작 전 모션 확인 대기 화면 -->
   <div id="setup-screen">
     <div class="setup-left">
+      <div class="brand-badge">ZAPARI SPORTS CLUB</div>
       <div class="setup-title">자파리 웜업 러너</div>
-      <div class="setup-sub">가로로 거치하고 1.5m 뒤에서 박스 안에 서 계시면 3초 후 자동 시작됩니다.</div>
+      <div class="setup-sub">폰을 가로로 거치하고 1.5m 뒤 박스 안에 서 계시면 3초 후 자동 시작됩니다.</div>
       <div id="status-msg">카메라 연결 중...</div>
       <div class="progress-bar-wrap">
         <div id="pose-progress"></div>
       </div>
-      <div class="auto-notice">※ 화면을 누르러 오지 마시고 제자리에서 대기해 주세요!</div>
+      <div class="auto-notice">※ 화면 터치 없이 제자리에서 준비해 주세요!</div>
     </div>
 
     <div class="cam-box-wrap">
@@ -224,15 +258,18 @@
     </div>
   </div>
 
-  <!-- 2. 중앙 시야를 가리지 않는 러닝 화면 -->
+  <!-- 2. 3D 러닝 화면 -->
   <canvas id="game-canvas"></canvas>
 
   <div class="dashboard-panel">
-    <div style="color: #38bdf8; font-size: 11px; letter-spacing: 1px;">ZAPARI WARM-UP</div>
-    <div>SCORE: <span id="score" style="color: #38bdf8;">0</span></div>
+    <div class="hud-header">
+      <span class="hud-title-tag">자파리 스포츠</span>
+      <span style="font-size: 11px; color:#94a3b8;">WARM-UP</span>
+    </div>
+    <div>점수: <span id="score" class="score-val">0</span></div>
     <div>동작: <span id="action-indicator" class="hud-action-tag">대기 중</span></div>
     <div>위치: <span id="lane-indicator" style="color: #4ade80;">중앙</span></div>
-    <div>속도: <span id="speed-text" style="color: #94a3b8;">천천히</span></div>
+    <div>속도: <span id="speed-text" style="color: #cbd5e1;">보통 🚶</span></div>
     <div class="speed-gauge-wrap">
       <div id="speed-gauge"></div>
     </div>
@@ -302,80 +339,263 @@
       } catch (e) {}
     }
 
-    // --- Three.js 씬 & 원근감 거리 개선 ---
+    // --- 2D 캔버스로 자파리 텍스처 즉석 생성 함수들 ---
+
+    // 1) 자파리 소년 캐릭터 뒷모습 텍스처 (파란 볼캡 뒤통수 + 점퍼 + 러닝 바운스)
+    function createZapariBoyBackTexture(frame, action) {
+      const c = document.createElement('canvas');
+      c.width = 256;
+      c.height = 320;
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, 256, 320);
+
+      const bounce = action === 'RUN' ? Math.sin(frame * 0.4) * 8 : 0;
+      const legSwing = action === 'RUN' ? Math.sin(frame * 0.4) * 16 : 0;
+
+      // 발/다리 (운동화)
+      ctx.fillStyle = '#0f172a'; // 남색 바지
+      if (action === 'DUCK') {
+        // 웅크림
+        ctx.fillRect(80, 240, 36, 40);
+        ctx.fillRect(140, 240, 36, 40);
+        ctx.fillStyle = '#ef4444'; // 빨간 운동화
+        ctx.beginPath(); ctx.arc(98, 285, 18, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(158, 285, 18, 0, Math.PI*2); ctx.fill();
+      } else if (action === 'JUMP') {
+        // 공중 점프 (다리 굽힘)
+        ctx.fillRect(85, 210, 32, 50);
+        ctx.fillRect(139, 210, 32, 50);
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath(); ctx.arc(101, 265, 18, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(155, 265, 18, 0, Math.PI*2); ctx.fill();
+      } else {
+        // 러닝 교차 발
+        ctx.fillRect(84, 210 + bounce, 34, 60 + legSwing);
+        ctx.fillRect(138, 210 + bounce, 34, 60 - legSwing);
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath(); ctx.arc(101, 275 + legSwing + bounce, 19, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(155, 275 - legSwing + bounce, 19, 0, Math.PI*2); ctx.fill();
+      }
+
+      // 상체 (자파리 점퍼: 블루 & 옐로우 포인트)
+      const torsoY = (action === 'DUCK' ? 160 : 130) + bounce;
+      ctx.fillStyle = '#0284c7'; // 자파리 메인 블루
+      ctx.beginPath();
+      ctx.roundRect(68, torsoY, 120, 85, 24);
+      ctx.fill();
+
+      // 점퍼 등번호/로고 원형
+      ctx.fillStyle = '#facc15'; // 옐로우
+      ctx.beginPath(); ctx.arc(128, torsoY + 42, 22, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('J', 128, torsoY + 43);
+
+      // 팔 (러닝 스윙)
+      ctx.fillStyle = '#0284c7';
+      const armSwing = action === 'RUN' ? Math.sin(frame * 0.4) * 20 : 0;
+      ctx.lineWidth = 18;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#0284c7';
+
+      ctx.beginPath();
+      ctx.moveTo(70, torsoY + 20);
+      ctx.lineTo(46, torsoY + 55 - armSwing);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(186, torsoY + 20);
+      ctx.lineTo(210, torsoY + 55 + armSwing);
+      ctx.stroke();
+
+      // 머리 & 뒤통수 모자 (파란색 스냅백 뒤로 씀)
+      const headY = (action === 'DUCK' ? 100 : 70) + bounce;
+      // 피부 목선
+      ctx.fillStyle = '#fcd34d';
+      ctx.fillRect(114, headY + 36, 28, 22);
+
+      // 모자 본체 (블루)
+      ctx.fillStyle = '#0369a1';
+      ctx.beginPath();
+      ctx.arc(128, headY + 20, 48, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 뒤로 돌아간 스냅백 챙 (오렌지/레드 포인트)
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath();
+      ctx.ellipse(128, headY + 58, 38, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 모자 조절 스트랩 (화이트)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(116, headY + 34, 24, 8);
+
+      const texture = new THREE.CanvasTexture(c);
+      return texture;
+    }
+
+    // 2) 자파리 공룡/괴물 장애물 텍스처 (좌우 레인)
+    function createDinoObstacleTexture() {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 300;
+      const ctx = c.getContext('2d');
+      // 연두색 귀여운 몬스터 실루엣
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.roundRect(48, 60, 160, 200, [60, 60, 30, 30]);
+      ctx.fill();
+
+      // 뿔/돌기 (노랑)
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.moveTo(80, 60); ctx.lineTo(95, 25); ctx.lineTo(110, 60); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(146, 60); ctx.lineTo(161, 25); ctx.lineTo(176, 60); ctx.fill();
+
+      // 눈 (뒤통수 느낌이거나 귀여운 얼굴)
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(100, 120, 20, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(156, 120, 20, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.arc(104, 120, 10, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(152, 120, 10, 0, Math.PI*2); ctx.fill();
+
+      // 배 무늬
+      ctx.fillStyle = '#86efac';
+      ctx.beginPath(); ctx.ellipse(128, 205, 55, 45, 0, 0, Math.PI*2); ctx.fill();
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    // 3) 통나무 바닥 장애물 텍스처 (점프용)
+    function createHurdleTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 80;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#b45309'; // 갈색 통나무
+      ctx.beginPath(); ctx.roundRect(10, 10, 492, 60, 24); ctx.fill();
+      // 체육 줄무늬 네온
+      ctx.fillStyle = '#facc15';
+      for(let x=40; x<480; x+=60) {
+        ctx.fillRect(x, 15, 25, 50);
+      }
+      return new THREE.CanvasTexture(c);
+    }
+
+    // 4) 천장 상단 장애물 텍스처 (숙이기용)
+    function createCeilingTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 140;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#6366f1'; // 보라색 번개/암석 구름
+      ctx.beginPath();
+      ctx.roundRect(10, 10, 492, 100, 30); ctx.fill();
+      // 위험 표식 라인
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(30, 85, 452, 16);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚡ DUCK DOWN! ⚡', 256, 55);
+      return new THREE.CanvasTexture(c);
+    }
+
+    // --- 3D Three.js 엔진 세팅 ---
     const canvas = document.getElementById('game-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a1128);
-    scene.fog = new THREE.Fog(0x0a1128, 50, 130);
+    scene.background = new THREE.Color(0x0f172a);
+    scene.fog = new THREE.Fog(0x0f172a, 45, 125);
 
-    // 카메라 각도를 약간 더 위로 올려 거리감(깊이)을 한눈에 파악할 수 있도록 조정
-    const camera3D = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 220);
-    camera3D.position.set(0, 4.2, 8.2);
-    camera3D.lookAt(0, 0.8, -18);
+    const camera3D = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 220);
+    camera3D.position.set(0, 4.0, 8.0);
+    camera3D.lookAt(0, 0.9, -18);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+    const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.3);
     dirLight.position.set(6, 14, 10);
     scene.add(dirLight);
 
     const laneX = { LEFT: -3.2, CENTER: 0, RIGHT: 3.2 };
 
-    // 바닥 격자 도로
+    // 바닥 러닝 트랙 (화사한 파란색 체육관 우레탄 트랙)
     const roadGeo = new THREE.PlaneGeometry(12, 170);
-    const roadMat = new THREE.MeshBasicMaterial({ color: 0x1e293b, wireframe: true });
+    const roadMat = new THREE.MeshBasicMaterial({ color: 0x1e3a8a, wireframe: false });
     const road = new THREE.Mesh(roadGeo, roadMat);
     road.rotation.x = -Math.PI / 2;
     road.position.z = -75;
     scene.add(road);
 
-    // ★ [원근감 해결 1] 바닥 거리 가이드 라인 (타이밍 알림선)
-    // 초록선: 장애물이 이 선에 닿았을 때 점프/숙이기 수행!
-    const hitZoneGeo = new THREE.PlaneGeometry(12, 1.2);
-    const hitZoneMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.35 });
-    const hitZoneLine = new THREE.Mesh(hitZoneGeo, hitZoneMat);
+    // 레인 구분선 (화이트 라인 2개)
+    for (let lx of [-1.6, 1.6]) {
+      const lineGeo = new THREE.PlaneGeometry(0.12, 170);
+      const lineMat = new THREE.MeshBasicMaterial({ color: 0x93c5fd });
+      const lineMesh = new THREE.Mesh(lineGeo, lineMat);
+      lineMesh.rotation.x = -Math.PI / 2;
+      lineMesh.position.set(lx, 0.01, -75);
+      scene.add(lineMesh);
+    }
+
+    // 바닥 타이밍 가이드선
+    // 초록선 (발밑 기준점: 닿았을 때 액션)
+    const hitZoneLine = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 1.4),
+      new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.4 })
+    );
     hitZoneLine.rotation.x = -Math.PI / 2;
-    hitZoneLine.position.set(0, 0.02, 0); // 캐릭터 바로 발밑 기준선
+    hitZoneLine.position.set(0, 0.02, 0);
     scene.add(hitZoneLine);
 
-    // 노랑선: 2미터 전방 주의 라인 (준비 타이밍)
-    const warnZoneGeo = new THREE.PlaneGeometry(12, 0.4);
-    const warnZoneMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.45 });
-    const warnZoneLine = new THREE.Mesh(warnZoneGeo, warnZoneMat);
+    // 노랑선 (전방 8m 주의 라인)
+    const warnZoneLine = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 0.4),
+      new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.5 })
+    );
     warnZoneLine.rotation.x = -Math.PI / 2;
     warnZoneLine.position.set(0, 0.02, -8);
     scene.add(warnZoneLine);
 
-    // 플레이어 아바타
+    // ★ [자파리 캐릭터 스프라이트 생성] ★
     const playerGroup = new THREE.Group();
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.7 });
-    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.4, 1.3, 16), bodyMat);
-    torso.position.y = 1.3;
-    playerGroup.add(torso);
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), bodyMat);
-    head.position.y = 2.2;
-    playerGroup.add(head);
+    const boyMat = new THREE.MeshBasicMaterial({ 
+      map: createZapariBoyBackTexture(0, 'RUN'), 
+      transparent: true,
+      side: THREE.DoubleSide
+    });
+    const boyPlane = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3.0), boyMat);
+    boyPlane.position.y = 1.45;
+    playerGroup.add(boyPlane);
 
-    // 캐릭터 발밑 그림자 원판 (내 위치 확인용)
-    const shadowGeo = new THREE.CircleGeometry(0.7, 24);
-    const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
-    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
-    shadow.rotation.x = -Math.PI / 2;
-    shadow.position.y = 0.03;
-    playerGroup.add(shadow);
+    // 발밑 그림자
+    const shadowMesh = new THREE.Mesh(
+      new THREE.CircleGeometry(0.85, 24),
+      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45 })
+    );
+    shadowMesh.rotation.x = -Math.PI / 2;
+    shadowMesh.position.y = 0.03;
+    playerGroup.add(shadowMesh);
 
     scene.add(playerGroup);
 
+    // 속도 제어
     const MIN_SPEED = 0.25;
     const MAX_SPEED = 1.05;
     let currentSpeed = MIN_SPEED;
     let targetSpeed = MIN_SPEED;
     const obstacles = [];
     let score = 0;
+    let animFrameCount = 0;
+
+    // 장애물 텍스처 캐싱
+    const texDino = createDinoObstacleTexture();
+    const texHurdle = createHurdleTexture();
+    const texCeiling = createCeilingTexture();
 
     function spawnObstacle() {
       if (!isGameRunning) return;
@@ -383,30 +603,39 @@
       const obsGroup = new THREE.Group();
 
       if (type === 0) {
-        // [좌/중/우 기둥]
+        // [자파리 공룡 장애물 (좌/중/우)]
         const lanes = [-3.2, 0, 3.2];
         const targetX = lanes[Math.floor(Math.random() * lanes.length)];
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.5, 1), new THREE.MeshLambertMaterial({ color: 0xef4444 }));
-        mesh.position.set(targetX, 1.25, 0);
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(2.4, 2.8),
+          new THREE.MeshBasicMaterial({ map: texDino, transparent: true })
+        );
+        mesh.position.set(targetX, 1.4, 0);
         obsGroup.add(mesh);
 
-        // 기둥 발밑 바닥 그림자 (거리감 체감 극대화)
-        const obsShadow = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.4), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45 }));
-        obsShadow.rotation.x = -Math.PI / 2;
-        obsShadow.position.set(targetX, 0.02, 0);
-        obsGroup.add(obsShadow);
+        // 공룡 그림자
+        const sh = new THREE.Mesh(new THREE.CircleGeometry(0.8, 16), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45 }));
+        sh.rotation.x = -Math.PI / 2;
+        sh.position.set(targetX, 0.02, 0);
+        obsGroup.add(sh);
 
         obsGroup.userData = { type: 'LANE', x: targetX, hit: false };
       } else if (type === 1) {
-        // [바닥 통나무 (점프용)]
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(10.5, 0.7, 1.2), new THREE.MeshLambertMaterial({ color: 0xf59e0b }));
-        mesh.position.set(0, 0.35, 0);
+        // [체육 허들 통나무 (점프용)]
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(10.5, 1.6),
+          new THREE.MeshBasicMaterial({ map: texHurdle, transparent: true })
+        );
+        mesh.position.set(0, 0.7, 0);
         obsGroup.add(mesh);
         obsGroup.userData = { type: 'JUMP', hit: false };
       } else {
-        // [상단 바위 (숙이기용)]
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(10.5, 2.0, 1.5), new THREE.MeshLambertMaterial({ color: 0x8b5cf6 }));
-        mesh.position.set(0, 2.4, 0);
+        // [상단 위험 바위 (숙이기용)]
+        const mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(10.5, 2.4),
+          new THREE.MeshBasicMaterial({ map: texCeiling, transparent: true })
+        );
+        mesh.position.set(0, 2.5, 0);
         obsGroup.add(mesh);
         obsGroup.userData = { type: 'DUCK', hit: false };
       }
@@ -417,7 +646,7 @@
     }
     setInterval(spawnObstacle, 2500);
 
-    // --- 모션 제어 변수 ---
+    // --- 정밀 모션 인식 제어 ---
     let targetX = 0;
     let targetY = 0;
     let smoothCenterX = 0.5;
@@ -461,7 +690,7 @@
       const leftAnkle = lm[27];
       const rightAnkle = lm[28];
 
-      // === [1단계: 캘리브레이션 모드] ===
+      // === [1단계: 3초 자동 인식 캘리브레이션] ===
       if (!isGameRunning) {
         if (isTransitioning) return;
 
@@ -528,7 +757,7 @@
         laneIndicator.innerText = "중앙";
       }
 
-      // 2) 점프 & 숙이기 분리
+      // 2) 점프 & 숙이기 분리 알고리즘
       const now = Date.now();
       const yDiff = baseHipY - currentHipY;
 
@@ -544,7 +773,7 @@
         currentPoseAction = "RUN";
         targetY = 0;
         actionIndicator.innerText = "달리기 🏃";
-        actionIndicator.style.color = "#facc15";
+        actionIndicator.style.color = "#38bdf8";
       } else if (now > duckCooldownUntil && yDiff > 0.13) {
         if (currentPoseAction !== "JUMP") {
           currentPoseAction = "JUMP";
@@ -552,15 +781,15 @@
         }
         targetY = 1.6;
         actionIndicator.innerText = "점프! 🦘";
-        actionIndicator.style.color = "#38bdf8";
+        actionIndicator.style.color = "#facc15";
       } else if (now > duckCooldownUntil) {
         currentPoseAction = "RUN";
         targetY = 0;
         actionIndicator.innerText = "달리기 🏃";
-        actionIndicator.style.color = "#facc15";
+        actionIndicator.style.color = "#38bdf8";
       }
 
-      // 3) 발구르기
+      // 3) 발구르기 감지
       if (currentPoseAction === "RUN" && leftAnkle && rightAnkle) {
         const ankleDelta = Math.abs(leftAnkle.y - rightAnkle.y);
         if (ankleDelta > 0.08 && lastAnkleDelta <= 0.08) {
@@ -583,7 +812,7 @@
       } else {
         targetSpeed = MIN_SPEED;
         speedText.innerText = "천천히 🚶";
-        speedText.style.color = "#94a3b8";
+        speedText.style.color = "#cbd5e1";
       }
 
       const gaugePercent = ((targetSpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)) * 100;
@@ -639,14 +868,17 @@
       requestAnimationFrame(animate);
 
       if (isGameRunning) {
+        animFrameCount++;
         currentSpeed += (targetSpeed - currentSpeed) * 0.08;
+
+        // 플레이어 캐릭터 스프라이트 프레임 갱신 (달리기 모션 생성)
+        if (animFrameCount % 4 === 0) {
+          boyMat.map = createZapariBoyBackTexture(animFrameCount, currentPoseAction);
+          boyMat.needsUpdate = true;
+        }
 
         playerGroup.position.x += (targetX - playerGroup.position.x) * 0.18;
         playerGroup.position.y += (targetY - playerGroup.position.y) * 0.18;
-
-        if (currentPoseAction === "RUN") {
-          playerGroup.position.y = Math.abs(Math.sin(Date.now() * (0.015 * (currentSpeed / 0.5)))) * 0.18;
-        }
 
         road.position.z += currentSpeed;
         if (road.position.z > -50) road.position.z = -75;
@@ -660,7 +892,7 @@
             const type = obs.userData.type;
             let safe = true;
 
-            if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.2) {
+            if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.3) {
               safe = false;
             } else if (type === 'JUMP' && playerGroup.position.y < 0.8) {
               safe = false;
