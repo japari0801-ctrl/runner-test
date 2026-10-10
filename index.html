@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
-  <title>자파리 웜업 러너</title>
+  <title>자파리 웜업 러너 - ZAPARI RUNNER</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #020617;
+      background: #0f172a;
       color: #fff;
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
@@ -46,16 +46,16 @@
       color: #0f172a;
       font-size: 11px;
       font-weight: 900;
-      padding: 3px 10px;
-      border-radius: 12px;
+      padding: 4px 12px;
+      border-radius: 14px;
       letter-spacing: 1px;
     }
     .setup-title {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 900;
       color: #38bdf8;
       letter-spacing: -0.5px;
-      text-shadow: 0 2px 10px rgba(56,189,248,0.3);
+      text-shadow: 0 4px 16px rgba(56,189,248,0.4);
     }
     .setup-sub {
       font-size: 13px;
@@ -144,7 +144,7 @@
       font-weight: 600;
     }
 
-    /* 2. 3D 게임 화면 및 자파리 대시보드 */
+    /* 2. 3D 게임 화면 및 HUD */
     #game-canvas {
       position: absolute;
       top: 0;
@@ -173,13 +173,12 @@
       transform: scaleX(-1);
     }
 
-    /* 자파리 전용 아케이드 대시보드 (시야 완전 개방) */
     .dashboard-panel {
       position: absolute;
       top: 16px;
       left: 16px;
       z-index: 10;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       border: 2px solid #38bdf8;
       box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       padding: 12px 18px;
@@ -207,7 +206,7 @@
     }
     .score-val {
       color: #facc15;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 900;
     }
     .hud-action-tag {
@@ -237,12 +236,11 @@
 </head>
 <body onclick="unlockAudioOnFirstTouch()">
 
-  <!-- 1. 시작 전 모션 확인 대기 화면 -->
   <div id="setup-screen">
     <div class="setup-left">
-      <div class="brand-badge">ZAPARI SPORTS CLUB</div>
+      <div class="brand-badge">ZAPARI SPORTS WARM-UP</div>
       <div class="setup-title">자파리 웜업 러너</div>
-      <div class="setup-sub">폰을 가로로 거치하고 1.5m 뒤 박스 안에 서 계시면 3초 후 자동 시작됩니다.</div>
+      <div class="setup-sub">카메라 1.5m 뒤 박스 안에 서 계시면 3초 후 자동 시작됩니다.</div>
       <div id="status-msg">카메라 연결 중...</div>
       <div class="progress-bar-wrap">
         <div id="pose-progress"></div>
@@ -258,13 +256,12 @@
     </div>
   </div>
 
-  <!-- 2. 3D 러닝 화면 -->
   <canvas id="game-canvas"></canvas>
 
   <div class="dashboard-panel">
     <div class="hud-header">
-      <span class="hud-title-tag">자파리 스포츠</span>
-      <span style="font-size: 11px; color:#94a3b8;">WARM-UP</span>
+      <span class="hud-title-tag">ZAPARI</span>
+      <span style="font-size: 11px; color:#94a3b8;">SPORTS CLUB</span>
     </div>
     <div>점수: <span id="score" class="score-val">0</span></div>
     <div>동작: <span id="action-indicator" class="hud-action-tag">대기 중</span></div>
@@ -283,7 +280,7 @@
     let isGameRunning = false;
     let isTransitioning = false;
 
-    // --- 오디오 신디사이저 ---
+    // 오디오 엔진
     let audioCtx = null;
     function unlockAudioOnFirstTouch() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -339,243 +336,259 @@
       } catch (e) {}
     }
 
-    // --- 2D 캔버스로 자파리 텍스처 즉석 생성 함수들 ---
-
-    // 1) 자파리 소년 캐릭터 뒷모습 텍스처 (파란 볼캡 뒤통수 + 점퍼 + 러닝 바운스)
-    function createZapariBoyBackTexture(frame, action) {
-      const c = document.createElement('canvas');
-      c.width = 256;
-      c.height = 320;
-      const ctx = c.getContext('2d');
-      ctx.clearRect(0, 0, 256, 320);
-
-      const bounce = action === 'RUN' ? Math.sin(frame * 0.4) * 8 : 0;
-      const legSwing = action === 'RUN' ? Math.sin(frame * 0.4) * 16 : 0;
-
-      // 발/다리 (운동화)
-      ctx.fillStyle = '#0f172a'; // 남색 바지
-      if (action === 'DUCK') {
-        // 웅크림
-        ctx.fillRect(80, 240, 36, 40);
-        ctx.fillRect(140, 240, 36, 40);
-        ctx.fillStyle = '#ef4444'; // 빨간 운동화
-        ctx.beginPath(); ctx.arc(98, 285, 18, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(158, 285, 18, 0, Math.PI*2); ctx.fill();
-      } else if (action === 'JUMP') {
-        // 공중 점프 (다리 굽힘)
-        ctx.fillRect(85, 210, 32, 50);
-        ctx.fillRect(139, 210, 32, 50);
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath(); ctx.arc(101, 265, 18, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(155, 265, 18, 0, Math.PI*2); ctx.fill();
-      } else {
-        // 러닝 교차 발
-        ctx.fillRect(84, 210 + bounce, 34, 60 + legSwing);
-        ctx.fillRect(138, 210 + bounce, 34, 60 - legSwing);
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath(); ctx.arc(101, 275 + legSwing + bounce, 19, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(155, 275 - legSwing + bounce, 19, 0, Math.PI*2); ctx.fill();
-      }
-
-      // 상체 (자파리 점퍼: 블루 & 옐로우 포인트)
-      const torsoY = (action === 'DUCK' ? 160 : 130) + bounce;
-      ctx.fillStyle = '#0284c7'; // 자파리 메인 블루
-      ctx.beginPath();
-      ctx.roundRect(68, torsoY, 120, 85, 24);
-      ctx.fill();
-
-      // 점퍼 등번호/로고 원형
-      ctx.fillStyle = '#facc15'; // 옐로우
-      ctx.beginPath(); ctx.arc(128, torsoY + 42, 22, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 22px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('J', 128, torsoY + 43);
-
-      // 팔 (러닝 스윙)
-      ctx.fillStyle = '#0284c7';
-      const armSwing = action === 'RUN' ? Math.sin(frame * 0.4) * 20 : 0;
-      ctx.lineWidth = 18;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#0284c7';
-
-      ctx.beginPath();
-      ctx.moveTo(70, torsoY + 20);
-      ctx.lineTo(46, torsoY + 55 - armSwing);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(186, torsoY + 20);
-      ctx.lineTo(210, torsoY + 55 + armSwing);
-      ctx.stroke();
-
-      // 머리 & 뒤통수 모자 (파란색 스냅백 뒤로 씀)
-      const headY = (action === 'DUCK' ? 100 : 70) + bounce;
-      // 피부 목선
-      ctx.fillStyle = '#fcd34d';
-      ctx.fillRect(114, headY + 36, 28, 22);
-
-      // 모자 본체 (블루)
-      ctx.fillStyle = '#0369a1';
-      ctx.beginPath();
-      ctx.arc(128, headY + 20, 48, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 뒤로 돌아간 스냅백 챙 (오렌지/레드 포인트)
-      ctx.fillStyle = '#f97316';
-      ctx.beginPath();
-      ctx.ellipse(128, headY + 58, 38, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 모자 조절 스트랩 (화이트)
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(116, headY + 34, 24, 8);
-
-      const texture = new THREE.CanvasTexture(c);
-      return texture;
+    // --- 인라인 SVG 기반 정밀 3D 클레이 텍스처 생성기 ---
+    function makeTextureFromSvg(svg) {
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      return new THREE.TextureLoader().load(url);
     }
 
-    // 2) 자파리 공룡/괴물 장애물 텍스처 (좌우 레인)
-    function createDinoObstacleTexture() {
-      const c = document.createElement('canvas');
-      c.width = 256; c.height = 300;
-      const ctx = c.getContext('2d');
-      // 연두색 귀여운 몬스터 실루엣
-      ctx.fillStyle = '#22c55e';
-      ctx.beginPath();
-      ctx.roundRect(48, 60, 160, 200, [60, 60, 30, 30]);
-      ctx.fill();
+    // 1) 자파리 공룡 우주복 곰돌이 러너 (달리는 뒷모습 3D 클레이 스타일)
+    const svgPlayerRun = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 360" width="300" height="360">
+      <defs>
+        <radialGradient id="shd" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#000" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="dinoBody" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#bbf7d0"/>
+          <stop offset="60%" stop-color="#86efac"/>
+          <stop offset="100%" stop-color="#4ade80"/>
+        </radialGradient>
+        <radialGradient id="bearSkin" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#fef08a"/>
+          <stop offset="70%" stop-color="#fde047"/>
+          <stop offset="100%" stop-color="#eab308"/>
+        </radialGradient>
+      </defs>
+      <!-- 바닥 그림자 -->
+      <ellipse cx="150" cy="340" rx="75" ry="16" fill="url(#shd)"/>
+      <!-- 공룡 꼬리 (뒤로 삐져나옴) -->
+      <ellipse cx="150" cy="275" rx="28" ry="18" fill="#4ade80" transform="rotate(-8 150 275)"/>
+      <!-- 통통한 뒤태 엉덩이 & 다리 -->
+      <ellipse cx="112" cy="285" rx="36" ry="46" fill="url(#dinoBody)" transform="rotate(-12 112 285)"/>
+      <ellipse cx="188" cy="285" rx="36" ry="46" fill="url(#dinoBody)" transform="rotate(12 188 285)"/>
+      <!-- 발바닥 패드 (노랑) -->
+      <ellipse cx="106" cy="324" rx="24" ry="15" fill="#fde047"/>
+      <ellipse cx="194" cy="324" rx="24" ry="15" fill="#fde047"/>
+      <!-- 등판 우주복 바디 -->
+      <ellipse cx="150" cy="210" rx="70" ry="74" fill="url(#dinoBody)"/>
+      <!-- 등판 공룡 돌기/점무늬 -->
+      <circle cx="150" cy="180" r="14" fill="#fef08a" opacity="0.8"/>
+      <circle cx="146" cy="225" r="12" fill="#fef08a" opacity="0.8"/>
+      <circle cx="152" cy="256" r="10" fill="#fef08a" opacity="0.8"/>
+      <!-- 귀여운 젤리 팔 -->
+      <ellipse cx="82" cy="195" rx="22" ry="34" fill="url(#dinoBody)" transform="rotate(32 82 195)"/>
+      <ellipse cx="218" cy="195" rx="22" ry="34" fill="url(#dinoBody)" transform="rotate(-32 218 195)"/>
+      <!-- 공룡 후드 머리 (뒤통수) -->
+      <circle cx="150" cy="115" r="68" fill="url(#dinoBody)"/>
+      <!-- 공룡 뿔 (상단) -->
+      <polygon points="150,30 134,65 166,65" fill="#fef08a" stroke="#86efac" stroke-width="4" stroke-linejoin="round"/>
+      <polygon points="120,44 110,72 135,72" fill="#fef08a" stroke="#86efac" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="180,44 190,72 165,72" fill="#fef08a" stroke="#86efac" stroke-width="3" stroke-linejoin="round"/>
+      <!-- 후드 둥근 귀 -->
+      <circle cx="95" cy="80" r="24" fill="url(#dinoBody)"/>
+      <circle cx="205" cy="80" r="24" fill="url(#dinoBody)"/>
+      <!-- 뒤통수에서 살짝 엿보이는 곰돌이 귀여운 볼살 쉐이드 -->
+      <ellipse cx="150" cy="130" rx="52" ry="38" fill="url(#bearSkin)" opacity="0.3"/>
+    </svg>`;
 
-      // 뿔/돌기 (노랑)
-      ctx.fillStyle = '#facc15';
-      ctx.beginPath();
-      ctx.moveTo(80, 60); ctx.lineTo(95, 25); ctx.lineTo(110, 60); ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(146, 60); ctx.lineTo(161, 25); ctx.lineTo(176, 60); ctx.fill();
+    // 2) 정면 마스코트 공룡 (좌우 레인 장애물)
+    const svgDinoObs = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 320" width="300" height="320">
+      <defs>
+        <radialGradient id="dGreen" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#bbf7d0"/><stop offset="60%" stop-color="#86efac"/><stop offset="100%" stop-color="#22c55e"/>
+        </radialGradient>
+        <radialGradient id="bFace" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#fef08a"/><stop offset="70%" stop-color="#fde047"/><stop offset="100%" stop-color="#eab308"/>
+        </radialGradient>
+      </defs>
+      <!-- 몸체 -->
+      <ellipse cx="150" cy="205" rx="88" ry="85" fill="url(#dGreen)"/>
+      <!-- 배 패치 -->
+      <ellipse cx="150" cy="215" rx="60" ry="55" fill="#fef08a"/>
+      <path d="M105 190 Q150 200 195 190 M100 220 Q150 230 200 220 M110 250 Q150 260 190 250" stroke="#facc15" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- 발 -->
+      <ellipse cx="100" cy="285" rx="34" ry="24" fill="url(#dGreen)"/>
+      <ellipse cx="200" cy="285" rx="34" ry="24" fill="url(#dGreen)"/>
+      <circle cx="90" cy="295" r="8" fill="#fef08a"/>
+      <circle cx="102" cy="298" r="8" fill="#fef08a"/>
+      <circle cx="114" cy="295" r="8" fill="#fef08a"/>
+      <circle cx="186" cy="295" r="8" fill="#fef08a"/>
+      <circle cx="198" cy="298" r="8" fill="#fef08a"/>
+      <circle cx="210" cy="295" r="8" fill="#fef08a"/>
+      <!-- 양손 반갑게 듬 -->
+      <circle cx="76" cy="180" r="22" fill="url(#dGreen)"/>
+      <circle cx="224" cy="180" r="22" fill="url(#dGreen)"/>
+      <!-- 얼굴 & 후드 -->
+      <circle cx="150" cy="115" r="72" fill="url(#dGreen)"/>
+      <circle cx="92" cy="75" r="24" fill="url(#dGreen)"/>
+      <circle cx="208" cy="75" r="24" fill="url(#dGreen)"/>
+      <!-- 공룡 이빨과 입 벌림 -->
+      <ellipse cx="150" cy="120" rx="54" ry="46" fill="url(#bFace)"/>
+      <path d="M110 92 Q150 110 190 92 Q175 105 150 102 Q125 105 110 92 Z" fill="#ffffff"/>
+      <!-- 눈 & 코 & 볼터치 -->
+      <circle cx="126" cy="125" r="8" fill="#0f172a"/>
+      <circle cx="174" cy="125" r="8" fill="#0f172a"/>
+      <ellipse cx="150" cy="138" rx="8" ry="6" fill="#0f172a"/>
+      <circle cx="106" cy="140" r="12" fill="#f87171" opacity="0.6"/>
+      <circle cx="194" cy="140" r="12" fill="#f87171" opacity="0.6"/>
+      <!-- 후드 윗니 & 공룡 눈 -->
+      <circle cx="118" cy="72" r="12" fill="#ffffff"/>
+      <circle cx="120" cy="72" r="6" fill="#0f172a"/>
+      <circle cx="182" cy="72" r="12" fill="#ffffff"/>
+      <circle cx="180" cy="72" r="6" fill="#0f172a"/>
+      <!-- 상단 노란 뿔 -->
+      <polygon points="150,22 135,52 165,52" fill="#fef08a"/>
+    </svg>`;
 
-      // 눈 (뒤통수 느낌이거나 귀여운 얼굴)
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(100, 120, 20, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(156, 120, 20, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#0f172a';
-      ctx.beginPath(); ctx.arc(104, 120, 10, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(152, 120, 10, 0, Math.PI*2); ctx.fill();
+    // 3) 파스텔 무지개 폼 허들 (바닥 점프 장애물)
+    const svgJumpHurdle = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120" width="600" height="120">
+      <defs>
+        <radialGradient id="postG" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#f59e0b"/>
+        </radialGradient>
+      </defs>
+      <!-- 양쪽 받침 기둥 베이스 -->
+      <rect x="20" y="70" width="90" height="42" rx="20" fill="#38bdf8"/>
+      <rect x="35" y="80" width="60" height="22" rx="10" fill="#f97316"/>
+      <rect x="490" y="70" width="90" height="42" rx="20" fill="#38bdf8"/>
+      <rect x="505" y="80" width="60" height="22" rx="10" fill="#f97316"/>
+      <!-- 양쪽 둥근 노란 기둥 타워 -->
+      <rect x="42" y="25" width="46" height="60" rx="22" fill="url(#postG)"/>
+      <circle cx="65" cy="22" r="15" fill="#86efac"/>
+      <circle cx="65" cy="55" r="10" fill="#86efac" opacity="0.9"/>
+      <rect x="512" y="25" width="46" height="60" rx="22" fill="url(#postG)"/>
+      <circle cx="535" cy="22" r="15" fill="#86efac"/>
+      <circle cx="535" cy="55" r="10" fill="#86efac" opacity="0.9"/>
+      <!-- 가로 푹신한 무지개 폼 바 -->
+      <g>
+        <rect x="80" y="38" width="440" height="36" rx="18" fill="#f97316"/>
+        <rect x="130" y="38" width="60" height="36" fill="#fef08a"/>
+        <rect x="190" y="38" width="60" height="36" fill="#86efac"/>
+        <rect x="250" y="38" width="60" height="36" fill="#38bdf8"/>
+        <rect x="310" y="38" width="60" height="36" fill="#c084fc"/>
+        <rect x="370" y="38" width="60" height="36" fill="#f472b6"/>
+        <rect x="430" y="38" width="60" height="36" fill="#fef08a"/>
+      </g>
+    </svg>`;
 
-      // 배 무늬
-      ctx.fillStyle = '#86efac';
-      ctx.beginPath(); ctx.ellipse(128, 205, 55, 45, 0, 0, Math.PI*2); ctx.fill();
+    // 4) 솜사탕 구름 속 공룡 곰돌이 + ⬇️ 화살표 (상단 숙이기 장애물)
+    const svgDuckCloud = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 220" width="540" height="220">
+      <defs>
+        <radialGradient id="cloudG" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#bae6fd"/><stop offset="70%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#38bdf8"/>
+        </radialGradient>
+      </defs>
+      <!-- 천장 지지 보라색 밧줄 -->
+      <rect x="135" y="0" width="16" height="85" rx="8" fill="#c084fc"/>
+      <rect x="389" y="0" width="16" height="85" rx="8" fill="#c084fc"/>
+      <!-- 빼꼼 고개 내민 공룡 모자 곰돌이 -->
+      <g transform="translate(195, 30)">
+        <circle cx="75" cy="55" r="42" fill="#86efac"/>
+        <circle cx="42" cy="35" r="14" fill="#86efac"/>
+        <circle cx="108" cy="35" r="14" fill="#86efac"/>
+        <polygon points="75,8 65,30 85,30" fill="#fef08a"/>
+        <!-- 곰돌이 얼굴 -->
+        <ellipse cx="75" cy="62" rx="32" ry="28" fill="#fde047"/>
+        <circle cx="62" cy="62" r="5" fill="#0f172a"/>
+        <circle cx="88" cy="62" r="5" fill="#0f172a"/>
+        <ellipse cx="75" cy="70" rx="5" ry="4" fill="#0f172a"/>
+        <circle cx="50" cy="72" r="7" fill="#f87171" opacity="0.6"/>
+        <circle cx="100" cy="72" r="7" fill="#f87171" opacity="0.6"/>
+        <!-- 양발 구름 잡기 -->
+        <circle cx="40" cy="88" r="12" fill="#fde047"/>
+        <circle cx="110" cy="88" r="12" fill="#fde047"/>
+      </g>
+      <!-- 통통한 솜사탕 구름 바디 -->
+      <path d="M90 145 Q50 145 50 115 Q50 85 95 85 Q120 50 175 60 Q225 35 295 50 Q365 35 415 60 Q470 50 495 85 Q540 85 540 115 Q540 145 500 145 Q515 190 455 195 Q380 205 270 200 Q160 205 85 195 Z" fill="url(#cloudG)"/>
+      <!-- 구름 양옆 별 장식 -->
+      <polygon points="105,115 111,130 128,130 114,140 119,156 105,146 91,156 96,140 82,130 99,130" fill="#c084fc"/>
+      <polygon points="435,115 441,130 458,130 444,140 449,156 435,146 421,156 426,140 412,130 429,130" fill="#c084fc"/>
+      <!-- 하향 화살표 엠블럼 (⬇️) -->
+      <g transform="translate(230, 95)">
+        <path d="M40 0 L40 40 L15 40 L40 78 L65 40 L40 40 Z" fill="#ffffff" stroke="#c084fc" stroke-width="8" stroke-linejoin="round"/>
+      </g>
+    </svg>`;
 
-      return new THREE.CanvasTexture(c);
-    }
-
-    // 3) 통나무 바닥 장애물 텍스처 (점프용)
-    function createHurdleTexture() {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 80;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#b45309'; // 갈색 통나무
-      ctx.beginPath(); ctx.roundRect(10, 10, 492, 60, 24); ctx.fill();
-      // 체육 줄무늬 네온
-      ctx.fillStyle = '#facc15';
-      for(let x=40; x<480; x+=60) {
-        ctx.fillRect(x, 15, 25, 50);
-      }
-      return new THREE.CanvasTexture(c);
-    }
-
-    // 4) 천장 상단 장애물 텍스처 (숙이기용)
-    function createCeilingTexture() {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 140;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#6366f1'; // 보라색 번개/암석 구름
-      ctx.beginPath();
-      ctx.roundRect(10, 10, 492, 100, 30); ctx.fill();
-      // 위험 표식 라인
-      ctx.fillStyle = '#facc15';
-      ctx.fillRect(30, 85, 452, 16);
-      ctx.fillStyle = '#0f172a';
-      ctx.font = 'bold 24px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('⚡ DUCK DOWN! ⚡', 256, 55);
-      return new THREE.CanvasTexture(c);
-    }
-
-    // --- 3D Three.js 엔진 세팅 ---
+    // --- Three.js 씬 초기화 ---
     const canvas = document.getElementById('game-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0f172a);
-    scene.fog = new THREE.Fog(0x0f172a, 45, 125);
+    scene.background = new THREE.Color(0xbae6fd); // 키즈 클럽 채광창 스카이블루 배경
+    scene.fog = new THREE.Fog(0xbae6fd, 50, 130);
 
     const camera3D = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 220);
     camera3D.position.set(0, 4.0, 8.0);
     camera3D.lookAt(0, 0.9, -18);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.98);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.3);
+    const dirLight = new THREE.DirectionalLight(0xffedd5, 1.25);
     dirLight.position.set(6, 14, 10);
     scene.add(dirLight);
 
     const laneX = { LEFT: -3.2, CENTER: 0, RIGHT: 3.2 };
 
-    // 바닥 러닝 트랙 (화사한 파란색 체육관 우레탄 트랙)
-    const roadGeo = new THREE.PlaneGeometry(12, 170);
-    const roadMat = new THREE.MeshBasicMaterial({ color: 0x1e3a8a, wireframe: false });
-    const road = new THREE.Mesh(roadGeo, roadMat);
+    // 바닥 트랙 (선명한 로열블루 우레탄 트랙)
+    const road = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 170),
+      new THREE.MeshBasicMaterial({ color: 0x1d4ed8 })
+    );
     road.rotation.x = -Math.PI / 2;
     road.position.z = -75;
     scene.add(road);
 
-    // 레인 구분선 (화이트 라인 2개)
+    // 화이트 레인 구분선
     for (let lx of [-1.6, 1.6]) {
-      const lineGeo = new THREE.PlaneGeometry(0.12, 170);
-      const lineMat = new THREE.MeshBasicMaterial({ color: 0x93c5fd });
-      const lineMesh = new THREE.Mesh(lineGeo, lineMat);
+      const lineMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.12, 170),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
       lineMesh.rotation.x = -Math.PI / 2;
       lineMesh.position.set(lx, 0.01, -75);
       scene.add(lineMesh);
     }
 
-    // 바닥 타이밍 가이드선
-    // 초록선 (발밑 기준점: 닿았을 때 액션)
+    // 초록 발밑 타이밍 선
     const hitZoneLine = new THREE.Mesh(
       new THREE.PlaneGeometry(12, 1.4),
-      new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.4 })
+      new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.45 })
     );
     hitZoneLine.rotation.x = -Math.PI / 2;
     hitZoneLine.position.set(0, 0.02, 0);
     scene.add(hitZoneLine);
 
-    // 노랑선 (전방 8m 주의 라인)
+    // 노랑 전방 8m 주의 선
     const warnZoneLine = new THREE.Mesh(
       new THREE.PlaneGeometry(12, 0.4),
-      new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.5 })
+      new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.6 })
     );
     warnZoneLine.rotation.x = -Math.PI / 2;
     warnZoneLine.position.set(0, 0.02, -8);
     scene.add(warnZoneLine);
 
-    // ★ [자파리 캐릭터 스프라이트 생성] ★
+    // ★ [자파리 주인공 스프라이트] ★
+    const playerTex = makeTextureFromSvg(svgPlayerRun);
     const playerGroup = new THREE.Group();
-    const boyMat = new THREE.MeshBasicMaterial({ 
-      map: createZapariBoyBackTexture(0, 'RUN'), 
-      transparent: true,
-      side: THREE.DoubleSide
-    });
-    const boyPlane = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3.0), boyMat);
-    boyPlane.position.y = 1.45;
-    playerGroup.add(boyPlane);
+    const playerPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.7, 3.24),
+      new THREE.MeshBasicMaterial({ map: playerTex, transparent: true, side: THREE.DoubleSide })
+    );
+    playerPlane.position.y = 1.62;
+    playerGroup.add(playerPlane);
 
-    // 발밑 그림자
+    // 입체 그림자
     const shadowMesh = new THREE.Mesh(
       new THREE.CircleGeometry(0.85, 24),
-      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45 })
+      new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.45 })
     );
     shadowMesh.rotation.x = -Math.PI / 2;
     shadowMesh.position.y = 0.03;
@@ -583,19 +596,18 @@
 
     scene.add(playerGroup);
 
-    // 속도 제어
+    // 장애물 텍스처 준비
+    const texDino = makeTextureFromSvg(svgDinoObs);
+    const texHurdle = makeTextureFromSvg(svgJumpHurdle);
+    const texCeiling = makeTextureFromSvg(svgDuckCloud);
+
     const MIN_SPEED = 0.25;
     const MAX_SPEED = 1.05;
     let currentSpeed = MIN_SPEED;
     let targetSpeed = MIN_SPEED;
     const obstacles = [];
     let score = 0;
-    let animFrameCount = 0;
-
-    // 장애물 텍스처 캐싱
-    const texDino = createDinoObstacleTexture();
-    const texHurdle = createHurdleTexture();
-    const texCeiling = createCeilingTexture();
+    let runTime = 0;
 
     function spawnObstacle() {
       if (!isGameRunning) return;
@@ -603,39 +615,38 @@
       const obsGroup = new THREE.Group();
 
       if (type === 0) {
-        // [자파리 공룡 장애물 (좌/중/우)]
+        // [자파리 공룡 (좌/중/우)]
         const lanes = [-3.2, 0, 3.2];
         const targetX = lanes[Math.floor(Math.random() * lanes.length)];
         const mesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(2.4, 2.8),
+          new THREE.PlaneGeometry(2.6, 2.77),
           new THREE.MeshBasicMaterial({ map: texDino, transparent: true })
         );
         mesh.position.set(targetX, 1.4, 0);
         obsGroup.add(mesh);
 
-        // 공룡 그림자
-        const sh = new THREE.Mesh(new THREE.CircleGeometry(0.8, 16), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45 }));
+        const sh = new THREE.Mesh(new THREE.CircleGeometry(0.85, 16), new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.4 }));
         sh.rotation.x = -Math.PI / 2;
         sh.position.set(targetX, 0.02, 0);
         obsGroup.add(sh);
 
         obsGroup.userData = { type: 'LANE', x: targetX, hit: false };
       } else if (type === 1) {
-        // [체육 허들 통나무 (점프용)]
+        // [바닥 무지개 에어바운스 뜀틀 (점프용)]
         const mesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(10.5, 1.6),
+          new THREE.PlaneGeometry(10.5, 2.1),
           new THREE.MeshBasicMaterial({ map: texHurdle, transparent: true })
         );
-        mesh.position.set(0, 0.7, 0);
+        mesh.position.set(0, 0.9, 0);
         obsGroup.add(mesh);
         obsGroup.userData = { type: 'JUMP', hit: false };
       } else {
-        // [상단 위험 바위 (숙이기용)]
+        // [상단 솜사탕 구름 ⬇️ (숙이기용)]
         const mesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(10.5, 2.4),
+          new THREE.PlaneGeometry(11.0, 4.48),
           new THREE.MeshBasicMaterial({ map: texCeiling, transparent: true })
         );
-        mesh.position.set(0, 2.5, 0);
+        mesh.position.set(0, 2.9, 0);
         obsGroup.add(mesh);
         obsGroup.userData = { type: 'DUCK', hit: false };
       }
@@ -646,7 +657,7 @@
     }
     setInterval(spawnObstacle, 2500);
 
-    // --- 정밀 모션 인식 제어 ---
+    // 모션 제어
     let targetX = 0;
     let targetY = 0;
     let smoothCenterX = 0.5;
@@ -690,7 +701,6 @@
       const leftAnkle = lm[27];
       const rightAnkle = lm[28];
 
-      // === [1단계: 3초 자동 인식 캘리브레이션] ===
       if (!isGameRunning) {
         if (isTransitioning) return;
 
@@ -731,7 +741,6 @@
         return;
       }
 
-      // === [2단계: 본 게임 정밀 모션 제어] ===
       if (!leftHip || !rightHip) return;
 
       const rawCenterX = (leftHip.x + rightHip.x) / 2;
@@ -745,7 +754,6 @@
         baseHipY = baseHipY * 0.99 + currentHipY * 0.01;
       }
 
-      // 1) 레인 이동
       if (smoothCenterX < 0.36) {
         targetX = laneX.RIGHT;
         laneIndicator.innerText = "우측";
@@ -757,14 +765,13 @@
         laneIndicator.innerText = "중앙";
       }
 
-      // 2) 점프 & 숙이기 분리 알고리즘
       const now = Date.now();
       const yDiff = baseHipY - currentHipY;
 
       if (yDiff < -0.12) {
         isDucking = true;
         currentPoseAction = "DUCK";
-        targetY = -0.65;
+        targetY = -0.75;
         actionIndicator.innerText = "숙이기 ⬇️";
         actionIndicator.style.color = "#a855f7";
         duckCooldownUntil = now + 500;
@@ -779,7 +786,7 @@
           currentPoseAction = "JUMP";
           playTone(659.25, 0.18, 'sine');
         }
-        targetY = 1.6;
+        targetY = 1.75;
         actionIndicator.innerText = "점프! 🦘";
         actionIndicator.style.color = "#facc15";
       } else if (now > duckCooldownUntil) {
@@ -789,7 +796,6 @@
         actionIndicator.style.color = "#38bdf8";
       }
 
-      // 3) 발구르기 감지
       if (currentPoseAction === "RUN" && leftAnkle && rightAnkle) {
         const ankleDelta = Math.abs(leftAnkle.y - rightAnkle.y);
         if (ankleDelta > 0.08 && lastAnkleDelta <= 0.08) {
@@ -863,18 +869,29 @@
       playSuccessSound();
     }
 
-    // --- 애니메이션 루프 ---
     function animate() {
       requestAnimationFrame(animate);
 
       if (isGameRunning) {
-        animFrameCount++;
         currentSpeed += (targetSpeed - currentSpeed) * 0.08;
+        runTime += currentSpeed * 0.4;
 
-        // 플레이어 캐릭터 스프라이트 프레임 갱신 (달리기 모션 생성)
-        if (animFrameCount % 4 === 0) {
-          boyMat.map = createZapariBoyBackTexture(animFrameCount, currentPoseAction);
-          boyMat.needsUpdate = true;
+        // ★ 3D 툰 피규어 리듬 애니메이션 ★
+        if (currentPoseAction === 'RUN') {
+          // 달릴 때 상하 쫀득한 바운스 + 좌우 갸우뚱 틸트
+          playerPlane.position.y = 1.62 + Math.abs(Math.sin(runTime * 4.2)) * 0.38;
+          playerPlane.rotation.z = Math.sin(runTime * 4.2) * 0.09;
+          playerPlane.scale.set(1.0, 1.0, 1.0);
+        } else if (currentPoseAction === 'JUMP') {
+          // 점프 시 솟구치며 몸을 뻗음
+          playerPlane.position.y = 1.62;
+          playerPlane.rotation.z = 0;
+          playerPlane.scale.set(0.92, 1.18, 1.0);
+        } else if (currentPoseAction === 'DUCK') {
+          // 숙일 때 바닥에 쏙 웅크림
+          playerPlane.position.y = 1.05;
+          playerPlane.rotation.z = 0;
+          playerPlane.scale.set(1.2, 0.62, 1.0);
         }
 
         playerGroup.position.x += (targetX - playerGroup.position.x) * 0.18;
@@ -887,14 +904,14 @@
           const obs = obstacles[i];
           obs.position.z += currentSpeed;
 
-          // 캐릭터 근처 판정 (z: -1.2 ~ 1.2)
+          // 캐릭터 근처 판정
           if (obs.position.z > -1.2 && obs.position.z < 1.2 && !obs.userData.hit) {
             const type = obs.userData.type;
             let safe = true;
 
-            if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.3) {
+            if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.35) {
               safe = false;
-            } else if (type === 'JUMP' && playerGroup.position.y < 0.8) {
+            } else if (type === 'JUMP' && playerGroup.position.y < 0.85) {
               safe = false;
             } else if (type === 'DUCK' && playerGroup.position.y > -0.2) {
               safe = false;
@@ -905,7 +922,7 @@
               playHitSound();
               if (navigator.vibrate) navigator.vibrate(120);
               document.body.style.backgroundColor = "#7f1d1d";
-              setTimeout(() => document.body.style.backgroundColor = "#020617", 90);
+              setTimeout(() => document.body.style.backgroundColor = "#0f172a", 90);
             }
           }
 
