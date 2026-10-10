@@ -13,6 +13,127 @@
       overflow: hidden;
       touch-action: none;
     }
+
+    /* 1. 모션 인식 준비/검증 화면 (Pre-Game Screen) */
+    #setup-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #090d16;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 16px;
+    }
+    .setup-header {
+      text-align: center;
+    }
+    .setup-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #38bdf8;
+      letter-spacing: 1px;
+    }
+    .setup-sub {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .cam-box-wrap {
+      position: relative;
+      width: 86vw;
+      max-width: 340px;
+      height: 60vh;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 3px solid #334155;
+      background: #000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    #setup-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    #setup-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+    }
+    /* 가이드 실루엣 박스 */
+    .guide-box {
+      position: absolute;
+      top: 8%;
+      left: 15%;
+      width: 70%;
+      height: 84%;
+      border: 2px dashed rgba(56, 189, 248, 0.4);
+      border-radius: 16px;
+      pointer-events: none;
+      box-sizing: border-box;
+      transition: all 0.3s;
+    }
+    .guide-box.ready {
+      border-color: #4ade80;
+      box-shadow: 0 0 20px rgba(74, 222, 128, 0.35);
+    }
+
+    .setup-footer {
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    #status-msg {
+      font-size: 16px;
+      font-weight: 800;
+      color: #facc15;
+      text-align: center;
+      min-height: 24px;
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      height: 10px;
+      background: #1e293b;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    #pose-progress {
+      width: 0%;
+      height: 100%;
+      background: #4ade80;
+      transition: width 0.1s linear;
+    }
+    .start-game-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 900;
+      border: none;
+      background: #334155;
+      color: #64748b;
+      cursor: not-allowed;
+      transition: all 0.2s;
+    }
+    .start-game-btn.active {
+      background: #38bdf8;
+      color: #020617;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    }
+
+    /* 2. 실제 게임 화면 캔버스 & HUD */
     #game-canvas {
       position: absolute;
       top: 0;
@@ -25,8 +146,8 @@
       position: absolute;
       bottom: 16px;
       right: 16px;
-      width: 110px;
-      height: 146px;
+      width: 105px;
+      height: 140px;
       border-radius: 12px;
       overflow: hidden;
       border: 2px solid rgba(56, 189, 248, 0.6);
@@ -34,7 +155,7 @@
       z-index: 10;
       background: #000;
     }
-    video {
+    #in-game-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -100,31 +221,6 @@
       background: #38bdf8;
       transition: width 0.15s ease-out;
     }
-    #start-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(2, 6, 23, 0.85);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-    }
-    .start-btn {
-      background: #38bdf8;
-      color: #020617;
-      border: none;
-      padding: 16px 36px;
-      border-radius: 30px;
-      font-size: 20px;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
-    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -133,12 +229,29 @@
 </head>
 <body>
 
-  <div id="start-overlay">
-    <div style="font-size: 24px; font-weight: 800; color: #38bdf8;">자파리 웜업 러너</div>
-    <div style="font-size: 14px; color: #94a3b8;">화면을 터치하면 오디오와 함께 시작됩니다</div>
-    <button class="start-btn" onclick="startGameAudio()">시작하기 🚀</button>
+  <!-- [1] 시작 전 모션 확인 & 승인 화면 -->
+  <div id="setup-screen">
+    <div class="setup-header">
+      <div class="setup-title">자파리 웜업 러너</div>
+      <div class="setup-sub">카메라 앞에 서서 온몸을 가이드 박스에 맞춰주세요</div>
+    </div>
+
+    <div class="cam-box-wrap">
+      <video id="setup-video" playsinline></video>
+      <canvas id="setup-canvas"></canvas>
+      <div class="guide-box" id="guide-box"></div>
+    </div>
+
+    <div class="setup-footer">
+      <div id="status-msg">카메라 연결 중...</div>
+      <div class="progress-bar-wrap">
+        <div id="pose-progress"></div>
+      </div>
+      <button class="start-game-btn" id="start-btn" onclick="confirmAndStartGame()">자리 잡기 필요</button>
+    </div>
   </div>
 
+  <!-- [2] 실제 3D 게임 화면 -->
   <canvas id="game-canvas"></canvas>
 
   <div class="dashboard-panel">
@@ -155,20 +268,19 @@
     <div class="action-display" id="action-indicator">READY</div>
   </div>
 
-  <div id="cam-preview">
-    <video id="webcam" playsinline></video>
+  <div id="cam-preview" style="display: none;">
+    <video id="in-game-video" playsinline></video>
   </div>
 
   <script>
-    // --- 오디오 엔진 ---
+    let isGameRunning = false;
+
+    // --- 오디오 신디사이저 ---
     let audioCtx = null;
-    function startGameAudio() {
+    function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      document.getElementById('start-overlay').style.display = 'none';
-      playTone(523.25, 0.15, 'triangle');
     }
-
     function playTone(freq, duration, type = 'sine') {
       if (!audioCtx) return;
       try {
@@ -184,7 +296,6 @@
         osc.stop(audioCtx.currentTime + duration);
       } catch (e) {}
     }
-
     function playSuccessSound() {
       if (!audioCtx) return;
       try {
@@ -202,7 +313,6 @@
         osc.stop(now + 0.22);
       } catch (e) {}
     }
-
     function playHitSound() {
       if (!audioCtx) return;
       try {
@@ -221,7 +331,7 @@
       } catch (e) {}
     }
 
-    // --- Three.js 씬 ---
+    // --- 3D Three.js 엔진 ---
     const canvas = document.getElementById('game-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -267,6 +377,7 @@
     let score = 0;
 
     function spawnObstacle() {
+      if (!isGameRunning) return;
       const type = Math.floor(Math.random() * 3);
       const obsGroup = new THREE.Group();
 
@@ -295,18 +406,28 @@
     }
     setInterval(spawnObstacle, 2400);
 
-    // --- 모션 인식 변수 (안정화 필터 적용) ---
+    // --- 모션 인식 변수 ---
     let targetX = 0;
     let targetY = 0;
-    let smoothCenterX = 0.5; // 좌우 스무딩용
+    let smoothCenterX = 0.5;
     let baseHipY = null;
 
     let currentLaneState = "CENTER";
     let currentPoseAction = "RUN";
-    let lastActionChangeTime = 0; // 빠른 플리커링 방지 쿨다운
+    let lastActionChangeTime = 0;
 
     let lastAnkleDelta = 0;
     let stepTimestamps = [];
+
+    // [캘리브레이션 전용 변수]
+    let calibrationFrames = 0;
+    const REQUIRED_FRAMES = 90; // 약 3초 유지 시 완료
+    const statusMsg = document.getElementById('status-msg');
+    const startBtn = document.getElementById('start-btn');
+    const poseProgress = document.getElementById('pose-progress');
+    const guideBox = document.getElementById('guide-box');
+    const setupCanvas = document.getElementById('setup-canvas');
+    const setupCtx = setupCanvas.getContext('2d');
 
     const laneIndicator = document.getElementById('lane-indicator');
     const actionIndicator = document.getElementById('action-indicator');
@@ -315,30 +436,78 @@
     const speedGauge = document.getElementById('speed-gauge');
 
     function onPoseResults(results) {
-      if (!results.poseLandmarks) return;
+      if (!results.poseLandmarks) {
+        if (!isGameRunning) handleCalibrationFail("카메라 앞에 서주세요! 👤");
+        return;
+      }
 
       const lm = results.poseLandmarks;
+      const nose = lm[0];
+      const leftShoulder = lm[11];
+      const rightShoulder = lm[12];
       const leftHip = lm[23];
       const rightHip = lm[24];
       const leftAnkle = lm[27];
       const rightAnkle = lm[28];
+
+      // === [1단계: 시작 전 위치 및 인식 확인 모드] ===
+      if (!isGameRunning) {
+        setupCanvas.width = videoElement.videoWidth;
+        setupCanvas.height = videoElement.videoHeight;
+        setupCtx.clearRect(0, 0, setupCanvas.width, setupCanvas.height);
+
+        // 관절 뼈대 시각화
+        drawSkeleton(setupCtx, lm, setupCanvas.width, setupCanvas.height);
+
+        // 핵심 관절 체크 (전신이 잘 들어왔는지)
+        const isUpperVisible = nose && nose.visibility > 0.5 && leftShoulder && rightShoulder;
+        const isHipVisible = leftHip && rightHip && leftHip.visibility > 0.5;
+        const isLegVisible = (leftAnkle && leftAnkle.visibility > 0.4) || (rightAnkle && rightAnkle.visibility > 0.4);
+
+        if (!isUpperVisible || !isHipVisible) {
+          handleCalibrationFail("상포인트가 덜 잡힙니다. 1.5m 뒤로 물러서세요!");
+          return;
+        }
+
+        const centerX = (leftHip.x + rightHip.x) / 2;
+        if (centerX < 0.25 || centerX > 0.75) {
+          handleCalibrationFail("화면 중앙으로 와주세요! ↔️");
+          return;
+        }
+
+        // 안정적인 위치 확인 완료 -> 3초 카운트다운 게이지 채우기
+        calibrationFrames++;
+        const percent = Math.min(100, Math.floor((calibrationFrames / REQUIRED_FRAMES) * 100));
+        poseProgress.style.width = percent + "%";
+        guideBox.classList.add('ready');
+
+        if (calibrationFrames < REQUIRED_FRAMES) {
+          statusMsg.innerText = `자세 완벽! 3초간 멈춰주세요... (${Math.ceil((REQUIRED_FRAMES - calibrationFrames) / 30)}초)`;
+          statusMsg.style.color = "#4ade80";
+        } else {
+          statusMsg.innerText = "모션 인식 준비 완료! 게임을 시작하세요!";
+          statusMsg.style.color = "#38bdf8";
+          startBtn.classList.add('active');
+          startBtn.innerText = "게임 시작! 🚀";
+        }
+        return;
+      }
+
+      // === [2단계: 게임 진행 중 실시간 판정 모드] ===
       if (!leftHip || !rightHip) return;
 
       const rawCenterX = (leftHip.x + rightHip.x) / 2;
       const currentHipY = (leftHip.y + rightHip.y) / 2;
 
-      // [보정 1] 좌우 좌표 지수 이동평균(EMA) 필터 (떨림 제거)
       smoothCenterX = smoothCenterX * 0.75 + rawCenterX * 0.25;
 
-      // [보정 2] 기준 높이(골반)를 매우 서서히 수렴 (바운스에 휩쓸리지 않도록)
       if (baseHipY === null) {
         baseHipY = currentHipY;
       } else {
         baseHipY = baseHipY * 0.985 + currentHipY * 0.015;
       }
 
-      // [보정 3] 레인 전환 임계치를 넓혀 데드존(중앙 여유 공간) 확보
-      // 거울 모드 기준: 0.35 이하 우측, 0.65 이상 좌측, 0.35~0.65는 확실한 중앙
+      // 1) 레인 이동
       if (smoothCenterX < 0.35) {
         currentLaneState = "RIGHT";
         targetX = laneX.RIGHT;
@@ -351,13 +520,12 @@
       }
       laneIndicator.innerText = `LANE: ${currentLaneState}`;
 
-      // [보정 4] 점프 & 숙이기 임계치 대폭 상향 (0.065 -> 0.11)
+      // 2) 점프 & 숙이기 (0.35초 쿨다운)
       const now = Date.now();
       const yDiff = baseHipY - currentHipY;
 
-      // 0.35초 쿨다운 적용: 동작이 너무 빠르게 깜빡거리며 바뀌는 현상 차단
       if (now - lastActionChangeTime > 350) {
-        if (yDiff > 0.11) { // 확실하게 뛸 때만 점프
+        if (yDiff > 0.11) {
           if (currentPoseAction !== "JUMP") {
             currentPoseAction = "JUMP";
             lastActionChangeTime = now;
@@ -365,7 +533,7 @@
           }
           targetY = 1.6;
           actionIndicator.innerText = "JUMP! 🦘";
-        } else if (yDiff < -0.11) { // 확실하게 스쿼트할 때만 숙이기
+        } else if (yDiff < -0.11) {
           if (currentPoseAction !== "DUCK") {
             currentPoseAction = "DUCK";
             lastActionChangeTime = now;
@@ -380,7 +548,7 @@
         }
       }
 
-      // [보정 5] 발구르기 임계치 상향 (0.045 -> 0.08)
+      // 3) 발구르기
       if (currentPoseAction === "RUN" && leftAnkle && rightAnkle) {
         const ankleDelta = Math.abs(leftAnkle.y - rightAnkle.y);
         if (ankleDelta > 0.08 && lastAnkleDelta <= 0.08) {
@@ -389,7 +557,6 @@
         lastAnkleDelta = ankleDelta;
       }
 
-      // 최근 2초간 스텝 기록 관리
       stepTimestamps = stepTimestamps.filter(t => now - t < 2000);
       const stepsInLastTwoSec = stepTimestamps.length;
 
@@ -411,56 +578,107 @@
       speedGauge.style.width = `${Math.max(15, gaugePercent)}%`;
     }
 
-    // --- 렌더링 루프 ---
+    // 인식 위치 이탈 시 리셋
+    function handleCalibrationFail(msg) {
+      calibrationFrames = 0;
+      poseProgress.style.width = "0%";
+      guideBox.classList.remove('ready');
+      statusMsg.innerText = msg;
+      statusMsg.style.color = "#facc15";
+      startBtn.classList.remove('active');
+      startBtn.innerText = "자리 잡기 필요";
+    }
+
+    // 관절선 그리기 헬퍼 함수
+    function drawSkeleton(ctx, landmarks, w, h) {
+      const connections = [
+        [11, 12], [11, 23], [12, 24], [23, 24],
+        [11, 13], [13, 15], [12, 14], [14, 16],
+        [23, 25], [25, 27], [24, 26], [26, 28]
+      ];
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineCap = "round";
+
+      connections.forEach(([i, j]) => {
+        const p1 = landmarks[i];
+        const p2 = landmarks[j];
+        if (p1 && p2 && p1.visibility > 0.4 && p2.visibility > 0.4) {
+          ctx.beginPath();
+          ctx.moveTo(p1.x * w, p1.y * h);
+          ctx.lineTo(p2.x * w, p2.y * h);
+          ctx.stroke();
+        }
+      });
+    }
+
+    // [게임 시작 승인 버튼]
+    function confirmAndStartGame() {
+      if (calibrationFrames < REQUIRED_FRAMES) return;
+      initAudio();
+      isGameRunning = true;
+
+      // 셋업 화면 숨기고 우측 하단 미니캠 활성화
+      document.getElementById('setup-screen').style.display = 'none';
+      document.getElementById('cam-preview').style.display = 'block';
+      const inGameVideo = document.getElementById('in-game-video');
+      inGameVideo.srcObject = videoElement.srcObject;
+      inGameVideo.play();
+
+      playSuccessSound();
+    }
+
+    // --- 3D 게임 루프 ---
     function animate() {
       requestAnimationFrame(animate);
 
-      currentSpeed += (targetSpeed - currentSpeed) * 0.08;
+      if (isGameRunning) {
+        currentSpeed += (targetSpeed - currentSpeed) * 0.08;
 
-      // 캐릭터 위치 부드러운 완충 이동
-      playerGroup.position.x += (targetX - playerGroup.position.x) * 0.18;
-      playerGroup.position.y += (targetY - playerGroup.position.y) * 0.18;
+        playerGroup.position.x += (targetX - playerGroup.position.x) * 0.18;
+        playerGroup.position.y += (targetY - playerGroup.position.y) * 0.18;
 
-      if (currentPoseAction === "RUN") {
-        playerGroup.position.y = Math.abs(Math.sin(Date.now() * (0.015 * (currentSpeed / 0.5)))) * 0.18;
-      }
-
-      road.position.z += currentSpeed;
-      if (road.position.z > -50) road.position.z = -70;
-
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        const obs = obstacles[i];
-        obs.position.z += currentSpeed;
-
-        if (obs.position.z > -1.2 && obs.position.z < 1.2 && !obs.userData.hit) {
-          const type = obs.userData.type;
-          let safe = true;
-
-          if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.1) {
-            safe = false;
-          } else if (type === 'JUMP' && playerGroup.position.y < 0.8) {
-            safe = false;
-          } else if (type === 'DUCK' && playerGroup.position.y > -0.2) {
-            safe = false;
-          }
-
-          if (!safe) {
-            obs.userData.hit = true;
-            playHitSound();
-            if (navigator.vibrate) navigator.vibrate(120);
-            document.body.style.backgroundColor = "#7f1d1d";
-            setTimeout(() => document.body.style.backgroundColor = "#020617", 90);
-          }
+        if (currentPoseAction === "RUN") {
+          playerGroup.position.y = Math.abs(Math.sin(Date.now() * (0.015 * (currentSpeed / 0.5)))) * 0.18;
         }
 
-        if (obs.position.z > 8) {
-          if (!obs.userData.hit) {
-            score += 10;
-            scoreDisplay.innerText = score;
-            playSuccessSound();
+        road.position.z += currentSpeed;
+        if (road.position.z > -50) road.position.z = -70;
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.position.z += currentSpeed;
+
+          if (obs.position.z > -1.2 && obs.position.z < 1.2 && !obs.userData.hit) {
+            const type = obs.userData.type;
+            let safe = true;
+
+            if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.1) {
+              safe = false;
+            } else if (type === 'JUMP' && playerGroup.position.y < 0.8) {
+              safe = false;
+            } else if (type === 'DUCK' && playerGroup.position.y > -0.2) {
+              safe = false;
+            }
+
+            if (!safe) {
+              obs.userData.hit = true;
+              playHitSound();
+              if (navigator.vibrate) navigator.vibrate(120);
+              document.body.style.backgroundColor = "#7f1d1d";
+              setTimeout(() => document.body.style.backgroundColor = "#020617", 90);
+            }
           }
-          scene.remove(obs);
-          obstacles.splice(i, 1);
+
+          if (obs.position.z > 8) {
+            if (!obs.userData.hit) {
+              score += 10;
+              scoreDisplay.innerText = score;
+              playSuccessSound();
+            }
+            scene.remove(obs);
+            obstacles.splice(i, 1);
+          }
         }
       }
 
@@ -474,7 +692,8 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    const videoElement = document.getElementById('webcam');
+    // --- 웹캠 구동 ---
+    const videoElement = document.getElementById('setup-video');
     const pose = new Pose({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
     });
