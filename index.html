@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>자파리 웜업 러너</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+  <title>자파리 웜업 러너 (가로모드)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -12,9 +12,11 @@
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       overflow: hidden;
       touch-action: none;
+      width: 100vw;
+      height: 100vh;
     }
 
-    /* 1. 모션 인식 준비/검증 화면 (Pre-Game Screen) */
+    /* [가로모드 1] 시작 전 3초 인식 화면 */
     #setup-screen {
       position: absolute;
       top: 0;
@@ -24,16 +26,21 @@
       background: #090d16;
       z-index: 100;
       display: flex;
-      flex-direction: column;
+      flex-direction: row; /* 가로 분할 배치 */
       align-items: center;
-      justify-content: space-between;
-      padding: 24px 16px;
+      justify-content: center;
+      padding: 16px 24px;
+      gap: 30px;
     }
-    .setup-header {
-      text-align: center;
+    .setup-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+      max-width: 320px;
     }
     .setup-title {
-      font-size: 22px;
+      font-size: 26px;
       font-weight: 900;
       color: #38bdf8;
       letter-spacing: 1px;
@@ -41,13 +48,13 @@
     .setup-sub {
       font-size: 13px;
       color: #94a3b8;
-      margin-top: 4px;
+      line-height: 1.5;
     }
     .cam-box-wrap {
       position: relative;
-      width: 86vw;
-      max-width: 340px;
-      height: 60vh;
+      width: 52vw;
+      height: 82vh;
+      max-width: 480px;
       border-radius: 20px;
       overflow: hidden;
       border: 3px solid #334155;
@@ -68,44 +75,48 @@
       height: 100%;
       transform: scaleX(-1);
     }
-    /* 가이드 실루엣 박스 */
     .guide-box {
       position: absolute;
-      top: 8%;
-      left: 15%;
-      width: 70%;
-      height: 84%;
-      border: 2px dashed rgba(56, 189, 248, 0.4);
-      border-radius: 16px;
+      top: 6%;
+      left: 18%;
+      width: 64%;
+      height: 88%;
+      border: 2.5px dashed rgba(56, 189, 248, 0.4);
+      border-radius: 18px;
       pointer-events: none;
-      box-sizing: border-box;
       transition: all 0.3s;
     }
     .guide-box.ready {
       border-color: #4ade80;
-      box-shadow: 0 0 20px rgba(74, 222, 128, 0.35);
+      box-shadow: 0 0 25px rgba(74, 222, 128, 0.5);
     }
-
-    .setup-footer {
+    #countdown-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      max-width: 340px;
+      height: 100%;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      font-size: 90px;
+      font-weight: 900;
+      color: #facc15;
+      text-shadow: 0 0 25px rgba(250, 204, 21, 0.8);
+      pointer-events: none;
+      z-index: 10;
     }
     #status-msg {
       font-size: 16px;
       font-weight: 800;
       color: #facc15;
-      text-align: center;
       min-height: 24px;
     }
     .progress-bar-wrap {
       width: 100%;
-      height: 10px;
+      height: 14px;
       background: #1e293b;
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
     }
     #pose-progress {
@@ -114,26 +125,13 @@
       background: #4ade80;
       transition: width 0.1s linear;
     }
-    .start-game-btn {
-      width: 100%;
-      padding: 15px;
-      border-radius: 14px;
-      font-size: 17px;
-      font-weight: 900;
-      border: none;
-      background: #334155;
+    .auto-notice {
+      font-size: 12px;
       color: #64748b;
-      cursor: not-allowed;
-      transition: all 0.2s;
-    }
-    .start-game-btn.active {
-      background: #38bdf8;
-      color: #020617;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+      font-weight: 600;
     }
 
-    /* 2. 실제 게임 화면 캔버스 & HUD */
+    /* [가로모드 2] 3D 게임 화면 및 가로 HUD */
     #game-canvas {
       position: absolute;
       top: 0;
@@ -146,8 +144,8 @@
       position: absolute;
       bottom: 16px;
       right: 16px;
-      width: 105px;
-      height: 140px;
+      width: 130px;
+      height: 98px; /* 가로 비율 캠 프리뷰 */
       border-radius: 12px;
       overflow: hidden;
       border: 2px solid rgba(56, 189, 248, 0.6);
@@ -163,13 +161,13 @@
     }
     #hud {
       position: absolute;
-      top: 16px;
+      top: 14px;
       left: 0;
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       z-index: 10;
       pointer-events: none;
     }
@@ -182,38 +180,38 @@
     .status-badge {
       background: rgba(15, 23, 42, 0.75);
       border: 2px solid #38bdf8;
-      padding: 6px 16px;
+      padding: 5px 18px;
       border-radius: 20px;
       font-size: 14px;
       font-weight: 700;
     }
     .action-display {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 900;
       color: #facc15;
       text-shadow: 0 4px 12px rgba(0,0,0,0.8);
     }
     .dashboard-panel {
       position: absolute;
-      top: 16px;
-      left: 16px;
+      top: 14px;
+      left: 20px;
       z-index: 10;
       background: rgba(0, 0, 0, 0.6);
-      padding: 10px 14px;
-      border-radius: 10px;
+      padding: 10px 16px;
+      border-radius: 12px;
       font-size: 13px;
       font-weight: 700;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
     }
     .speed-gauge-wrap {
-      width: 90px;
+      width: 100px;
       height: 8px;
       background: #1e293b;
       border-radius: 4px;
       overflow: hidden;
-      margin-top: 4px;
+      margin-top: 2px;
     }
     #speed-gauge {
       width: 20%;
@@ -227,31 +225,29 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
-<body>
+<body onclick="unlockAudioOnFirstTouch()">
 
-  <!-- [1] 시작 전 모션 확인 & 승인 화면 -->
+  <!-- 1. 시작 전 모션 확인 대기 화면 (가로 배치) -->
   <div id="setup-screen">
-    <div class="setup-header">
+    <div class="setup-left">
       <div class="setup-title">자파리 웜업 러너</div>
-      <div class="setup-sub">카메라 앞에 서서 온몸을 가이드 박스에 맞춰주세요</div>
+      <div class="setup-sub">폰을 가로로 거치하고 1.5m 뒤에서 박스 안에 서 계시면 3초 후 자동 시작됩니다.</div>
+      <div id="status-msg">카메라 연결 중...</div>
+      <div class="progress-bar-wrap">
+        <div id="pose-progress"></div>
+      </div>
+      <div class="auto-notice">※ 화면을 터치하지 마시고 제자리에서 대기해 주세요!</div>
     </div>
 
     <div class="cam-box-wrap">
       <video id="setup-video" playsinline></video>
       <canvas id="setup-canvas"></canvas>
       <div class="guide-box" id="guide-box"></div>
-    </div>
-
-    <div class="setup-footer">
-      <div id="status-msg">카메라 연결 중...</div>
-      <div class="progress-bar-wrap">
-        <div id="pose-progress"></div>
-      </div>
-      <button class="start-game-btn" id="start-btn" onclick="confirmAndStartGame()">자리 잡기 필요</button>
+      <div id="countdown-overlay"></div>
     </div>
   </div>
 
-  <!-- [2] 실제 3D 게임 화면 -->
+  <!-- 2. 3D 가로 와이드 러닝 화면 -->
   <canvas id="game-canvas"></canvas>
 
   <div class="dashboard-panel">
@@ -274,10 +270,11 @@
 
   <script>
     let isGameRunning = false;
+    let isTransitioning = false;
 
     // --- 오디오 신디사이저 ---
     let audioCtx = null;
-    function initAudio() {
+    function unlockAudioOnFirstTouch() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
@@ -331,7 +328,7 @@
       } catch (e) {}
     }
 
-    // --- 3D Three.js 엔진 ---
+    // --- 가로모드 최적화 Three.js 씬 ---
     const canvas = document.getElementById('game-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -339,11 +336,12 @@
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a1128);
-    scene.fog = new THREE.Fog(0x0a1128, 40, 110);
+    scene.fog = new THREE.Fog(0x0a1128, 45, 120);
 
-    const camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera3D.position.set(0, 3.8, 7.5);
-    camera3D.lookAt(0, 1.2, -15);
+    // 가로 화면에 맞춘 와이드 카메라 앵글
+    const camera3D = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera3D.position.set(0, 3.4, 7.2);
+    camera3D.lookAt(0, 1.1, -16);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
     scene.add(ambientLight);
@@ -351,8 +349,8 @@
     dirLight.position.set(5, 12, 10);
     scene.add(dirLight);
 
-    const laneX = { LEFT: -2.8, CENTER: 0, RIGHT: 2.8 };
-    const roadGeo = new THREE.PlaneGeometry(10, 160);
+    const laneX = { LEFT: -3.2, CENTER: 0, RIGHT: 3.2 }; // 가로모드용 레인 간격 확장
+    const roadGeo = new THREE.PlaneGeometry(12, 160);
     const roadMat = new THREE.MeshBasicMaterial({ color: 0x1e293b, wireframe: true });
     const road = new THREE.Mesh(roadGeo, roadMat);
     road.rotation.x = -Math.PI / 2;
@@ -382,19 +380,19 @@
       const obsGroup = new THREE.Group();
 
       if (type === 0) {
-        const lanes = [-2.8, 0, 2.8];
+        const lanes = [-3.2, 0, 3.2];
         const targetX = lanes[Math.floor(Math.random() * lanes.length)];
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.5, 1), new THREE.MeshLambertMaterial({ color: 0xef4444 }));
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.5, 1), new THREE.MeshLambertMaterial({ color: 0xef4444 }));
         mesh.position.set(targetX, 1.25, 0);
         obsGroup.add(mesh);
         obsGroup.userData = { type: 'LANE', x: targetX, hit: false };
       } else if (type === 1) {
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.6, 1.2), new THREE.MeshLambertMaterial({ color: 0xf59e0b }));
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(10.5, 0.6, 1.2), new THREE.MeshLambertMaterial({ color: 0xf59e0b }));
         mesh.position.set(0, 0.3, 0);
         obsGroup.add(mesh);
         obsGroup.userData = { type: 'JUMP', hit: false };
       } else {
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(8.5, 2.0, 1.5), new THREE.MeshLambertMaterial({ color: 0x8b5cf6 }));
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(10.5, 2.0, 1.5), new THREE.MeshLambertMaterial({ color: 0x8b5cf6 }));
         mesh.position.set(0, 2.4, 0);
         obsGroup.add(mesh);
         obsGroup.userData = { type: 'DUCK', hit: false };
@@ -406,26 +404,26 @@
     }
     setInterval(spawnObstacle, 2400);
 
-    // --- 모션 인식 변수 ---
+    // --- 정밀 모션 인식 & 점프/숙이기 분리 로직 ---
     let targetX = 0;
     let targetY = 0;
     let smoothCenterX = 0.5;
     let baseHipY = null;
 
-    let currentLaneState = "CENTER";
     let currentPoseAction = "RUN";
-    let lastActionChangeTime = 0;
+    let isDucking = false;        // 숙이기 상태 플래그
+    let duckCooldownUntil = 0;    // 숙이기 후 일어날 때 점프 튀는 것 방지용 쿨다운
 
     let lastAnkleDelta = 0;
     let stepTimestamps = [];
 
-    // [캘리브레이션 전용 변수]
     let calibrationFrames = 0;
-    const REQUIRED_FRAMES = 90; // 약 3초 유지 시 완료
+    const REQUIRED_FRAMES = 80;
+
     const statusMsg = document.getElementById('status-msg');
-    const startBtn = document.getElementById('start-btn');
     const poseProgress = document.getElementById('pose-progress');
     const guideBox = document.getElementById('guide-box');
+    const countdownOverlay = document.getElementById('countdown-overlay');
     const setupCanvas = document.getElementById('setup-canvas');
     const setupCtx = setupCanvas.getContext('2d');
 
@@ -437,7 +435,7 @@
 
     function onPoseResults(results) {
       if (!results.poseLandmarks) {
-        if (!isGameRunning) handleCalibrationFail("카메라 앞에 서주세요! 👤");
+        if (!isGameRunning && !isTransitioning) handleCalibrationFail("카메라 앞에 서주세요! 👤");
         return;
       }
 
@@ -450,22 +448,20 @@
       const leftAnkle = lm[27];
       const rightAnkle = lm[28];
 
-      // === [1단계: 시작 전 위치 및 인식 확인 모드] ===
+      // === [1단계: 3초 자동 인식 캘리브레이션] ===
       if (!isGameRunning) {
+        if (isTransitioning) return;
+
         setupCanvas.width = videoElement.videoWidth;
         setupCanvas.height = videoElement.videoHeight;
         setupCtx.clearRect(0, 0, setupCanvas.width, setupCanvas.height);
-
-        // 관절 뼈대 시각화
         drawSkeleton(setupCtx, lm, setupCanvas.width, setupCanvas.height);
 
-        // 핵심 관절 체크 (전신이 잘 들어왔는지)
         const isUpperVisible = nose && nose.visibility > 0.5 && leftShoulder && rightShoulder;
         const isHipVisible = leftHip && rightHip && leftHip.visibility > 0.5;
-        const isLegVisible = (leftAnkle && leftAnkle.visibility > 0.4) || (rightAnkle && rightAnkle.visibility > 0.4);
 
         if (!isUpperVisible || !isHipVisible) {
-          handleCalibrationFail("상포인트가 덜 잡힙니다. 1.5m 뒤로 물러서세요!");
+          handleCalibrationFail("1.5m 뒤로 물러서서 몸을 맞춰주세요!");
           return;
         }
 
@@ -475,25 +471,25 @@
           return;
         }
 
-        // 안정적인 위치 확인 완료 -> 3초 카운트다운 게이지 채우기
         calibrationFrames++;
         const percent = Math.min(100, Math.floor((calibrationFrames / REQUIRED_FRAMES) * 100));
         poseProgress.style.width = percent + "%";
         guideBox.classList.add('ready');
 
-        if (calibrationFrames < REQUIRED_FRAMES) {
-          statusMsg.innerText = `자세 완벽! 3초간 멈춰주세요... (${Math.ceil((REQUIRED_FRAMES - calibrationFrames) / 30)}초)`;
-          statusMsg.style.color = "#4ade80";
-        } else {
-          statusMsg.innerText = "모션 인식 준비 완료! 게임을 시작하세요!";
-          statusMsg.style.color = "#38bdf8";
-          startBtn.classList.add('active');
-          startBtn.innerText = "게임 시작! 🚀";
+        const remainingSec = Math.ceil((REQUIRED_FRAMES - calibrationFrames) / 28);
+        countdownOverlay.innerText = remainingSec > 0 ? remainingSec : "GO!";
+        statusMsg.innerText = `자세 완벽! 가만히 서 계세요... (${remainingSec}초)`;
+        statusMsg.style.color = "#4ade80";
+
+        if (calibrationFrames >= REQUIRED_FRAMES) {
+          isTransitioning = true;
+          countdownOverlay.innerText = "START! 🏃";
+          setTimeout(autoStartGame, 400);
         }
         return;
       }
 
-      // === [2단계: 게임 진행 중 실시간 판정 모드] ===
+      // === [2단계: 본 게임 정밀 모션 제어] ===
       if (!leftHip || !rightHip) return;
 
       const rawCenterX = (leftHip.x + rightHip.x) / 2;
@@ -501,54 +497,61 @@
 
       smoothCenterX = smoothCenterX * 0.75 + rawCenterX * 0.25;
 
+      // 기준 높이: 숙이거나 점프 중일 때는 기준선을 절대 갱신하지 않음 (오차 방지)
       if (baseHipY === null) {
         baseHipY = currentHipY;
-      } else {
-        baseHipY = baseHipY * 0.985 + currentHipY * 0.015;
+      } else if (!isDucking && currentPoseAction === "RUN") {
+        baseHipY = baseHipY * 0.99 + currentHipY * 0.01;
       }
 
-      // 1) 레인 이동
-      if (smoothCenterX < 0.35) {
-        currentLaneState = "RIGHT";
+      // 1) 레인 이동 (가로 화면 비율에 맞춘 판정 영역)
+      if (smoothCenterX < 0.36) {
         targetX = laneX.RIGHT;
-      } else if (smoothCenterX > 0.65) {
-        currentLaneState = "LEFT";
+        laneIndicator.innerText = "LANE: RIGHT";
+      } else if (smoothCenterX > 0.64) {
         targetX = laneX.LEFT;
+        laneIndicator.innerText = "LANE: LEFT";
       } else {
-        currentLaneState = "CENTER";
         targetX = laneX.CENTER;
+        laneIndicator.innerText = "LANE: CENTER";
       }
-      laneIndicator.innerText = `LANE: ${currentLaneState}`;
 
-      // 2) 점프 & 숙이기 (0.35초 쿨다운)
+      // 2) 점프 & 숙이기 분리 알고리즘 (앉았다 일어날 때 점프 튀는 현상 차단)
       const now = Date.now();
-      const yDiff = baseHipY - currentHipY;
+      const yDiff = baseHipY - currentHipY; // 골반 상승량 (+: 점프, -: 숙이기)
 
-      if (now - lastActionChangeTime > 350) {
-        if (yDiff > 0.11) {
-          if (currentPoseAction !== "JUMP") {
-            currentPoseAction = "JUMP";
-            lastActionChangeTime = now;
-            playTone(659.25, 0.18, 'sine');
-          }
-          targetY = 1.6;
-          actionIndicator.innerText = "JUMP! 🦘";
-        } else if (yDiff < -0.11) {
-          if (currentPoseAction !== "DUCK") {
-            currentPoseAction = "DUCK";
-            lastActionChangeTime = now;
-            playTone(329.63, 0.22, 'triangle');
-          }
-          targetY = -0.6;
-          actionIndicator.innerText = "DUCK! ⬇️";
-        } else {
-          currentPoseAction = "RUN";
-          targetY = 0;
-          actionIndicator.innerText = "RUNNING 🏃";
+      // [숙이기 판정] 엉덩이가 기준치보다 0.12 이상 아래로 내려감
+      if (yDiff < -0.12) {
+        isDucking = true;
+        currentPoseAction = "DUCK";
+        targetY = -0.65;
+        actionIndicator.innerText = "DUCK! ⬇️";
+        duckCooldownUntil = now + 500; // 일어난 후 0.5초 동안은 점프 판정 완전 차단
+      } 
+      // [숙이기에서 일어나는 중] 점프로 튀지 않고 무조건 RUN으로 복귀
+      else if (isDucking && yDiff >= -0.12) {
+        isDucking = false;
+        currentPoseAction = "RUN";
+        targetY = 0;
+        actionIndicator.innerText = "RUNNING 🏃";
+      }
+      // [점프 판정] 숙이기 쿨다운이 끝났고, 충분히 높게 뛰었을 때만 발동 (임계치 0.13으로 상향)
+      else if (now > duckCooldownUntil && yDiff > 0.13) {
+        if (currentPoseAction !== "JUMP") {
+          currentPoseAction = "JUMP";
+          playTone(659.25, 0.18, 'sine');
         }
+        targetY = 1.6;
+        actionIndicator.innerText = "JUMP! 🦘";
+      } 
+      // [기본 상태]
+      else if (now > duckCooldownUntil) {
+        currentPoseAction = "RUN";
+        targetY = 0;
+        actionIndicator.innerText = "RUNNING 🏃";
       }
 
-      // 3) 발구르기
+      // 3) 제자리 달리기 발구르기
       if (currentPoseAction === "RUN" && leftAnkle && rightAnkle) {
         const ankleDelta = Math.abs(leftAnkle.y - rightAnkle.y);
         if (ankleDelta > 0.08 && lastAnkleDelta <= 0.08) {
@@ -578,18 +581,15 @@
       speedGauge.style.width = `${Math.max(15, gaugePercent)}%`;
     }
 
-    // 인식 위치 이탈 시 리셋
     function handleCalibrationFail(msg) {
       calibrationFrames = 0;
       poseProgress.style.width = "0%";
       guideBox.classList.remove('ready');
+      countdownOverlay.innerText = "";
       statusMsg.innerText = msg;
       statusMsg.style.color = "#facc15";
-      startBtn.classList.remove('active');
-      startBtn.innerText = "자리 잡기 필요";
     }
 
-    // 관절선 그리기 헬퍼 함수
     function drawSkeleton(ctx, landmarks, w, h) {
       const connections = [
         [11, 12], [11, 23], [12, 24], [23, 24],
@@ -612,13 +612,10 @@
       });
     }
 
-    // [게임 시작 승인 버튼]
-    function confirmAndStartGame() {
-      if (calibrationFrames < REQUIRED_FRAMES) return;
-      initAudio();
+    function autoStartGame() {
+      unlockAudioOnFirstTouch();
       isGameRunning = true;
 
-      // 셋업 화면 숨기고 우측 하단 미니캠 활성화
       document.getElementById('setup-screen').style.display = 'none';
       document.getElementById('cam-preview').style.display = 'block';
       const inGameVideo = document.getElementById('in-game-video');
@@ -628,7 +625,7 @@
       playSuccessSound();
     }
 
-    // --- 3D 게임 루프 ---
+    // --- 애니메이션 루프 ---
     function animate() {
       requestAnimationFrame(animate);
 
@@ -653,7 +650,7 @@
             const type = obs.userData.type;
             let safe = true;
 
-            if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.1) {
+            if (type === 'LANE' && Math.abs(playerGroup.position.x - obs.userData.x) < 1.2) {
               safe = false;
             } else if (type === 'JUMP' && playerGroup.position.y < 0.8) {
               safe = false;
@@ -686,13 +683,13 @@
     }
     animate();
 
+    // 화면 회전 및 리사이즈 시 가로 비율 자동 유지
     window.addEventListener('resize', () => {
       camera3D.aspect = window.innerWidth / window.innerHeight;
       camera3D.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // --- 웹캠 구동 ---
     const videoElement = document.getElementById('setup-video');
     const pose = new Pose({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
@@ -707,12 +704,13 @@
 
     pose.onResults(onPoseResults);
 
+    // 가로 해상도에 맞춘 640x480 입력 스트림
     const camera = new Camera(videoElement, {
       onFrame: async () => {
         await pose.send({ image: videoElement });
       },
-      width: 480,
-      height: 640
+      width: 640,
+      height: 480
     });
     camera.start();
   </script>
