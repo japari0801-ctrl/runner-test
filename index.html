@@ -100,6 +100,33 @@
       background: #38bdf8;
       transition: width 0.15s ease-out;
     }
+
+    /* 오디오 시작 안내 오버레이 (모바일 브라우저 보안 규격 대응) */
+    #start-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(2, 6, 23, 0.85);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .start-btn {
+      background: #38bdf8;
+      color: #020617;
+      border: none;
+      padding: 16px 36px;
+      border-radius: 30px;
+      font-size: 20px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -107,6 +134,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+
+  <!-- 모바일 브라우저는 화면을 한 번 터치해야 사운드가 출력됩니다 -->
+  <div id="start-overlay">
+    <div style="font-size: 24px; font-weight: 800; color: #38bdf8;">자파리 웜업 러너</div>
+    <div style="font-size: 14px; color: #94a3b8;">화면을 터치하면 오디오와 함께 시작됩니다</div>
+    <button class="start-btn" onclick="startGameAudio()">시작하기 🚀</button>
+  </div>
 
   <canvas id="game-canvas"></canvas>
 
@@ -129,6 +163,75 @@
   </div>
 
   <script>
+    // --- 0. 신디사이저 오디오 엔진 (Web Audio API) ---
+    let audioCtx = null;
+
+    function startGameAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      document.getElementById('start-overlay').style.display = 'none';
+      playTone(523.25, 0.15, 'triangle'); // C5 알림음
+    }
+
+    // 단음 사운드 재생
+    function playTone(freq, duration, type = 'sine') {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // 아케이드 코인/성공음 (주파수 2단계 상승)
+    function playSuccessSound() {
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.setValueAtTime(880.00, now + 0.08); // A5
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      } catch (e) {}
+    }
+
+    // 타격/충돌음 (주파수 하강 노이즈감)
+    function playHitSound() {
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.25);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } catch (e) {}
+    }
+
     // --- 1. Three.js 세팅 ---
     const canvas = document.getElementById('game-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -172,7 +275,7 @@
 
     scene.add(playerGroup);
 
-    // 속도 제어 변수
+    // 속도 제어
     const MIN_SPEED = 0.25;
     const MAX_SPEED = 1.1;
     let currentSpeed = MIN_SPEED;
@@ -193,21 +296,21 @@
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(targetX, 1.25, 0);
         obsGroup.add(mesh);
-        obsGroup.userData = { type: 'LANE', x: targetX };
+        obsGroup.userData = { type: 'LANE', x: targetX, hit: false };
       } else if (type === 1) {
         const geo = new THREE.BoxGeometry(8.5, 0.6, 1.2);
         const mat = new THREE.MeshLambertMaterial({ color: 0xf59e0b });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(0, 0.3, 0);
         obsGroup.add(mesh);
-        obsGroup.userData = { type: 'JUMP' };
+        obsGroup.userData = { type: 'JUMP', hit: false };
       } else {
         const geo = new THREE.BoxGeometry(8.5, 2.0, 1.5);
         const mat = new THREE.MeshLambertMaterial({ color: 0x8b5cf6 });
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(0, 2.4, 0);
         obsGroup.add(mesh);
-        obsGroup.userData = { type: 'DUCK' };
+        obsGroup.userData = { type: 'DUCK', hit: false };
       }
 
       obsGroup.position.z = -90;
@@ -217,14 +320,14 @@
 
     setInterval(spawnObstacle, 2400);
 
-    // --- 2. 모션 판정 및 스텝 감지 ---
+    // --- 2. 모션 트래킹 변수 & 매핑 ---
     let targetX = 0;
     let targetY = 0;
     let baseHipY = null;
     let currentLaneState = "CENTER";
     let currentPoseAction = "RUN";
+    let prevPoseAction = "RUN";
 
-    // 발구르기 빈도 측정 변수
     let lastAnkleDelta = 0;
     let stepTimestamps = [];
 
@@ -272,20 +375,25 @@
         currentPoseAction = "JUMP";
         targetY = 1.6;
         actionIndicator.innerText = "JUMP! 🦘";
+        if (prevPoseAction !== "JUMP") {
+          playTone(659.25, 0.18, 'sine'); // E5 점프음
+        }
       } else if (yDiff < -0.065) {
         currentPoseAction = "DUCK";
         targetY = -0.55;
         actionIndicator.innerText = "DUCK! ⬇️";
+        if (prevPoseAction !== "DUCK") {
+          playTone(329.63, 0.22, 'triangle'); // E4 숙이기음
+        }
       } else {
         currentPoseAction = "RUN";
         targetY = 0;
         actionIndicator.innerText = "RUNNING 🏃";
 
-        // 3) 제자리 달리기 발구르기 빈도 측정
+        // 3) 제자리 달리기 감지
         if (leftAnkle && rightAnkle) {
           const ankleDelta = Math.abs(leftAnkle.y - rightAnkle.y);
           const now = Date.now();
-          // 발의 교차 변위가 임계점을 넘을 때 스텝 카운트 기록
           if (ankleDelta > 0.045 && lastAnkleDelta <= 0.045) {
             stepTimestamps.push(now);
           }
@@ -293,56 +401,52 @@
         }
       }
 
-      // 최근 2초간의 스텝 기록만 유지
+      prevPoseAction = currentPoseAction;
+
       const now = Date.now();
       stepTimestamps = stepTimestamps.filter(t => now - t < 2000);
 
-      // 스텝 빈도에 따른 목표 속도 계산
       const stepsInLastTwoSec = stepTimestamps.length;
       if (stepsInLastTwoSec >= 5) {
-        targetSpeed = MAX_SPEED; // 전력질주
+        targetSpeed = MAX_SPEED;
         speedText.innerText = "부스터! 🔥";
         speedText.style.color = "#ef4444";
       } else if (stepsInLastTwoSec >= 2) {
-        targetSpeed = 0.65; // 기본 러닝
+        targetSpeed = 0.65;
         speedText.innerText = "조깅 중 🏃";
         speedText.style.color = "#4ade80";
       } else {
-        targetSpeed = MIN_SPEED; // 걷기/정지
+        targetSpeed = MIN_SPEED;
         speedText.innerText = "천천히 🚶";
         speedText.style.color = "#94a3b8";
       }
 
-      // UI 게이지 업데이트
       const gaugePercent = ((targetSpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)) * 100;
       speedGauge.style.width = `${Math.max(15, gaugePercent)}%`;
     }
 
-    // --- 3. 메인 렌더링 루프 ---
+    // --- 3. 게임 렌더링 & 충돌 피드백 루프 ---
     function animate() {
       requestAnimationFrame(animate);
 
-      // 속도 부드럽게 보간 적용
       currentSpeed += (targetSpeed - currentSpeed) * 0.08;
 
       playerGroup.position.x += (targetX - playerGroup.position.x) * 0.22;
       playerGroup.position.y += (targetY - playerGroup.position.y) * 0.22;
 
       if (currentPoseAction === "RUN") {
-        // 달리기 속도에 비례한 상하 바운스
         playerGroup.position.y = Math.abs(Math.sin(Date.now() * (0.015 * (currentSpeed / 0.5)))) * 0.2;
       }
 
-      // 바닥 이동 속도 연동
       road.position.z += currentSpeed;
       if (road.position.z > -50) road.position.z = -70;
 
-      // 장애물 이동 속도 연동
       for (let i = obstacles.length - 1; i >= 0; i--) {
         const obs = obstacles[i];
         obs.position.z += currentSpeed;
 
-        if (obs.position.z > -1.2 && obs.position.z < 1.2) {
+        // 충돌 검사
+        if (obs.position.z > -1.2 && obs.position.z < 1.2 && !obs.userData.hit) {
           const type = obs.userData.type;
           let safe = true;
 
@@ -355,16 +459,29 @@
           }
 
           if (!safe) {
+            obs.userData.hit = true;
+            playHitSound(); // 쿵! 피격음
+
+            // 기기 진동 (안드로이드 지원)
+            if (navigator.vibrate) {
+              navigator.vibrate(120);
+            }
+
+            // 화면 붉은색 타격 플래시
             document.body.style.backgroundColor = "#7f1d1d";
-            setTimeout(() => document.body.style.backgroundColor = "#020617", 80);
+            setTimeout(() => document.body.style.backgroundColor = "#020617", 90);
           }
         }
 
+        // 완벽 회피 통과 시 점수 및 성공음
         if (obs.position.z > 8) {
+          if (!obs.userData.hit) {
+            score += 10;
+            scoreDisplay.innerText = score;
+            playSuccessSound(); // 띠링! 코인 성공음
+          }
           scene.remove(obs);
           obstacles.splice(i, 1);
-          score += 10;
-          scoreDisplay.innerText = score;
         }
       }
 
